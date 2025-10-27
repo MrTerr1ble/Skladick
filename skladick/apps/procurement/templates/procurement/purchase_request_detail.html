@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Заявка {{ purchase_request.number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3">Заявка {{ purchase_request.number }}</h1>
+        <span class="badge bg-secondary">{{ purchase_request.get_state_display }}</span>
+    </div>
+    <div class="btn-group" role="group">
+        <a class="btn btn-outline-secondary" href="{% url 'procurement:purchase_request_update' purchase_request.pk %}">Редактировать</a>
+        <a class="btn btn-outline-dark" href="{% url 'procurement:purchase_request_list' %}">Назад</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Номенклатура</dt>
+            <dd class="col-sm-8">{{ purchase_request.item }}</dd>
+
+            <dt class="col-sm-4">Количество</dt>
+            <dd class="col-sm-8">{{ purchase_request.qty }} {{ purchase_request.uom.code }}</dd>
+
+            <dt class="col-sm-4">Склад</dt>
+            <dd class="col-sm-8">{{ purchase_request.warehouse }}</dd>
+
+            <dt class="col-sm-4">Поставщик</dt>
+            <dd class="col-sm-8">{{ purchase_request.supplier|default:"—" }}</dd>
+
+            <dt class="col-sm-4">Комментарий</dt>
+            <dd class="col-sm-8">{{ purchase_request.comment|default:"—" }}</dd>
+
+            <dt class="col-sm-4">Файл</dt>
+            <dd class="col-sm-8">
+                {% if purchase_request.attachment %}
+                    <a href="{{ purchase_request.attachment.url }}" target="_blank">Скачать</a>
+                {% else %}
+                    —
+                {% endif %}
+            </dd>
+
+            <dt class="col-sm-4">Создана</dt>
+            <dd class="col-sm-8">{{ purchase_request.created_at|date:"d.m.Y H:i" }}</dd>
+
+            <dt class="col-sm-4">Автор</dt>
+            <dd class="col-sm-8">{{ purchase_request.created_by|default:"—" }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}
