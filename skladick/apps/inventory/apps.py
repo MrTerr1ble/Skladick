@@ -5,3 +5,6 @@ class InventoryConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "apps.inventory"
     verbose_name = "Остатки и движения"
+
+    def ready(self):
+        from . import signals

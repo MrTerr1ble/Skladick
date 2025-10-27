@@ -4,6 +4,7 @@ from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
 from django.views import View
+from apps.ore.models import OreReceipt
 
 from .forms import PurchaseRequestForm
 from .models import PurchaseRequest
@@ -50,24 +51,54 @@ class PurchaseRequestUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class PurchaseRequestStatusChangeView(LoginRequiredMixin, View):
-    """Изменение статуса заявки (отправить, утвердить, отклонить)."""
+    """Изменение статуса заявки и автоматическое создание приёмки при утверждении."""
 
     def post(self, request, pk, action):
         pr = get_object_or_404(PurchaseRequest, pk=pk)
-        # простая логика переходов
+
+        # --- Отправка на утверждение ---
         if action == "submit" and pr.state == "DRAFT":
             pr.state = "SUBMITTED"
-            msg = "Заявка отправлена на рассмотрение."
+            msg = f"Заявка {pr.number} отправлена на утверждение."
+
+        # --- Утверждение заявки ---
         elif action == "approve" and pr.state == "SUBMITTED":
             pr.state = "APPROVED"
-            msg = "Заявка утверждена."
+            msg = f"Заявка {pr.number} утверждена."
+
+            # 🔥 создаём автоматическую приёмку руды
+            try:
+                loc = pr.warehouse.location_set.first()  # первая локация склада
+                if not loc:
+                    messages.warning(
+                        request,
+                        f"⚠️ У склада '{pr.warehouse}' нет локаций, приёмка не создана.",
+                    )
+                else:
+                    OreReceipt.objects.create(
+                        location=loc,
+                        item=pr.item,
+                        quantity=pr.qty,
+                        contract=f"Закупка {pr.number}",
+                        created_by=request.user,
+                    )
+                    messages.success(
+                        request,
+                        f"✅ Создан акт приёмки по заявке {pr.number} ({pr.qty} {pr.uom.code})",
+                    )
+            except Exception as e:
+                messages.error(request, f"Ошибка при создании приёмки: {e}")
+
+        # --- Отклонение заявки ---
         elif action == "reject" and pr.state in ["SUBMITTED", "APPROVED"]:
             pr.state = "REJECTED"
-            msg = "Заявка отклонена."
+            msg = f"Заявка {pr.number} отклонена."
+
+        # --- Некорректные переходы ---
         else:
-            messages.warning(request, "Недопустимое действие.")
+            messages.warning(request, "Недопустимое действие для текущего статуса.")
             return redirect("procurement:purchase_request_detail", pk=pk)
 
         pr.save(update_fields=["state"])
-        messages.success(request, msg)
+        messages.info(request, msg)
         return redirect("procurement:purchase_request_detail", pk=pk)

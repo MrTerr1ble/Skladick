@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.crypto import get_random_string
 from django.conf import settings
 
 
@@ -15,7 +16,7 @@ class PurchaseRequest(models.Model):
         (REJECTED, "Отклонена"),
     ]
 
-    number = models.CharField("Номер", max_length=32, unique=True)
+    number = models.CharField("Номер", max_length=50, unique=True, blank=True)
     item = models.ForeignKey("catalog.Item", on_delete=models.PROTECT, verbose_name="Номенклатура")
     qty = models.DecimalField("Кол-во", max_digits=18, decimal_places=3)
     uom = models.ForeignKey("catalog.Uom", on_delete=models.PROTECT, verbose_name="ЕИ")
@@ -34,3 +35,8 @@ class PurchaseRequest(models.Model):
 
     def __str__(self):
         return f"PR {self.number} {self.item} ({self.get_state_display()})"
+    
+    def save(self, *args, **kwargs):
+        if not self.number:
+            self.number = f"REQ-{get_random_string(6).upper()}"
+        super().save(*args, **kwargs)
