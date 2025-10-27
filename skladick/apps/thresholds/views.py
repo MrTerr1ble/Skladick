@@ -1,12 +1,13 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
 from django.views.generic import ListView
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
 from .models import Alert
 
 
-class AlertListView(ListView):
+class AlertListView(LoginRequiredMixin, ListView):
     model = Alert
     template_name = "thresholds/alert_list.html"
     context_object_name = "alerts"
@@ -18,28 +19,40 @@ class AlertListView(ListView):
 def alert_action(request, pk, action):
     alert = get_object_or_404(Alert, pk=pk)
     if request.method == "POST":
-        if action == "ack" and alert.state == "OPEN":
-            alert.state = "ACK"
-        elif action == "close" and alert.state in ("OPEN","ACK"):
-            alert.state = "CLOSED"
-        alert.save(update_fields=["state"])
+        now = timezone.now()
+        if action == "ack" and alert.state == Alert.OPEN:
+            alert.state = Alert.ACK
+            alert.acknowledged_at = now
+            alert.save(update_fields=["state", "acknowledged_at"])
+        elif action == "close" and alert.state in (Alert.OPEN, Alert.ACK):
+            alert.state = Alert.CLOSED
+            if alert.acknowledged_at is None:
+                alert.acknowledged_at = now
+            alert.closed_at = now
+            alert.save(update_fields=["state", "acknowledged_at", "closed_at"])
     return redirect("thresholds:alert_list")
 
 
 @login_required
 def alerts_api(request):
     """Возвращает последние открытые алерты для уведомлений."""
-    alerts = list(
-        Alert.objects.filter(state="OPEN")
-        .order_by("-created_at")
-        .values(
-            "id",
-            "item__name",
-            "current_qty",
-            "uom__code",
-            "warehouse__name",
-            "location__code",
-            "message"
-        )[:5]
+    alerts = (
+        Alert.objects.filter(state=Alert.OPEN)
+        .select_related("item", "uom", "warehouse", "location")
+        .order_by("-created_at")[:5]
     )
-    return JsonResponse(alerts, safe=False)
+    data = [
+        {
+            "id": alert.id,
+            "item": alert.item.name,
+            "current_qty": str(alert.current_qty),
+            "uom": alert.uom.code,
+            "warehouse": alert.warehouse.name,
+            "location": alert.location.code if alert.location else "—",
+            "message": alert.message or "",
+            "severity": alert.get_severity_display(),
+            "severity_code": alert.severity,
+        }
+        for alert in alerts
+    ]
+    return JsonResponse(data, safe=False)
