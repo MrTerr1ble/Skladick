@@ -13,9 +13,9 @@ class InventoryAdmin(admin.ModelAdmin):
 
 @admin.register(Movement)
 class MovementAdmin(admin.ModelAdmin):
-    list_display = ("type", "occurred_at", "item", "qty", "uom", "actor")
-    list_filter = ("type", "item", "uom", "occurred_at")
-    search_fields = ("item__sku", "item__name", "actor__username")
+    list_display = ("type", "occurred_at", "item", "qty", "uom", "serial_number", "actor")
+    list_filter = ("type", "item__kind", "item", "uom", "occurred_at")
+    search_fields = ("item__sku", "item__name", "actor__username", "serial_number")
     date_hierarchy = "occurred_at"
     ordering = ("-occurred_at",)
     autocomplete_fields = ("item", "from_location", "to_location", "uom", "actor")

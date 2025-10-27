@@ -17,8 +17,13 @@ class InventoryListView(LoginRequiredMixin, ListView):
         qs = super().get_queryset().select_related("location__warehouse", "item", "uom")
         w = self.request.GET.get("warehouse")
         i = self.request.GET.get("item")
-        if w: qs = qs.filter(location__warehouse__id=w)
-        if i: qs = qs.filter(item__id=i)
+        kind = self.request.GET.get("kind")
+        if w:
+            qs = qs.filter(location__warehouse__id=w)
+        if kind:
+            qs = qs.filter(item__kind=kind)
+        if i:
+            qs = qs.filter(item__id=i)
         return qs
 
     def get_context_data(self, **kwargs):
@@ -26,7 +31,12 @@ class InventoryListView(LoginRequiredMixin, ListView):
         from apps.catalog.models import Item
         ctx = super().get_context_data(**kwargs)
         ctx["warehouses"] = Warehouse.objects.all().order_by("name")
-        ctx["items"] = Item.objects.all().order_by("name")[:500]
+        kind = self.request.GET.get("kind")
+        items = Item.objects.all().order_by("name")
+        if kind:
+            items = items.filter(kind=kind)
+        ctx["items"] = items[:500]
+        ctx["kinds"] = Item.KINDS
         query = self.request.GET.copy()
         if "page" in query:
             query.pop("page")

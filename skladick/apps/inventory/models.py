@@ -43,6 +43,7 @@ class Movement(models.Model):
     )
     qty = models.DecimalField("Количество", max_digits=18, decimal_places=3)
     uom = models.ForeignKey("catalog.Uom", on_delete=models.PROTECT, verbose_name="ЕИ")
+    serial_number = models.CharField("Серийный номер", max_length=64, blank=True)
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, verbose_name="Оператор")
     note = models.TextField("Комментарий", blank=True)
 

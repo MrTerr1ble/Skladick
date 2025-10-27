@@ -51,6 +51,12 @@
     </div>
 
     <div class="field">
+      <label class="label">Серийный номер</label>
+      {{ form.serial_number }}
+      {% for error in form.serial_number.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
+    </div>
+
+    <div class="field">
       <label class="label">Единица измерения</label>
       {{ form.uom }}
       {% for error in form.uom.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
