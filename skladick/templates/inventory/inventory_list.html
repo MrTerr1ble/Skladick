@@ -18,6 +18,12 @@
             <option value="{{ w.id }}" {% if request.GET.warehouse == w.id|stringformat:'s' %}selected{% endif %}>{{ w.name }}</option>
           {% endfor %}
         </select>
+        <select class="input" name="kind">
+          <option value="">Тип: все</option>
+          {% for value, label in kinds %}
+            <option value="{{ value }}" {% if request.GET.kind == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
         <select class="input" name="item">
           <option value="">Номенклатура: все</option>
           {% for it in items %}

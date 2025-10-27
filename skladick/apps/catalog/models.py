@@ -15,15 +15,30 @@ class Uom(models.Model):
 
 
 class Item(models.Model):
+    ORE = "ORE"
+    TOOL = "TOOL"
+    EQUIPMENT = "EQUIPMENT"
+    CONSUMABLE = "CONSUMABLE"
+
+    KINDS = [
+        (ORE, "Руды"),
+        (TOOL, "Инструменты"),
+        (EQUIPMENT, "Оборудование"),
+        (CONSUMABLE, "Расходники"),
+    ]
+
     sku = models.CharField("Артикул", max_length=64, unique=True, db_index=True)
     name = models.CharField("Наименование", max_length=128)
     description = models.TextField("Описание", blank=True)
     base_uom = models.ForeignKey(Uom, on_delete=models.PROTECT, verbose_name="Базовая ЕИ")
+    kind = models.CharField("Тип", max_length=16, choices=KINDS, default=TOOL, db_index=True)
 
     class Meta:
         verbose_name = "Номенклатура"
         verbose_name_plural = "Номенклатура"
-        indexes = [models.Index(fields=["name"])]
+        indexes = [
+            models.Index(fields=["name"]),
+        ]
 
     def __str__(self):
         return f"{self.sku} — {self.name}"

@@ -48,6 +48,7 @@
             <th>Номенклатура</th>
             <th>Кол-во</th>
             <th>ЕИ</th>
+            <th>Серийный №</th>
             <th>Откуда</th>
             <th>Куда</th>
             <th>Оператор</th>
@@ -62,6 +63,7 @@
               <td>{{ m.item }}</td>
               <td>{{ m.qty }}</td>
               <td>{{ m.uom.code }}</td>
+              <td>{{ m.serial_number|default:"—" }}</td>
               <td>{% if m.from_location %}{{ m.from_location.warehouse.name }}/{{ m.from_location.code }}{% else %}—{% endif %}</td>
               <td>{% if m.to_location %}{{ m.to_location.warehouse.name }}/{{ m.to_location.code }}{% else %}—{% endif %}</td>
               <td>{{ m.actor|default:"—" }}</td>
@@ -69,7 +71,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="9" class="notice">Записей нет</td>
+              <td colspan="10" class="notice">Записей нет</td>
             </tr>
           {% endfor %}
         </tbody>
