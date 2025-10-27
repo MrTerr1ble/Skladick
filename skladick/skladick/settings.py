@@ -40,6 +40,7 @@ INSTALLED_APPS += [
     "apps.reports",
     "apps.procurement",
     "apps.transport",
+    "channels",
 ]
 
 MIDDLEWARE = [
@@ -68,6 +69,15 @@ TEMPLATES = [
         },
     },
 ]
+
+ASGI_APPLICATION = "skladick.asgi.application"
+
+# Канал по умолчанию (в памяти)
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 WSGI_APPLICATION = 'skladick.wsgi.application'
 
@@ -125,6 +135,8 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR/"static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR/"media"
 

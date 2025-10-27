@@ -5,23 +5,53 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}ИСУС{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+
+  <!-- Основные стили проекта -->
+  <link rel="stylesheet" href="{% static 'static/css/app.css' %}">
+
+  <!-- Дополнительные стили страниц -->
   {% block head %}{% endblock %}
 </head>
 <body>
   <div class="app">
-    <!-- Левое меню -->
+    <!-- Левое меню (как в макете) -->
     {% include "includes/nav.html" %}
 
-    <!-- Контент -->
+    <!-- Контентная область -->
     <main>
       {% block topbar %}{% endblock %}
+
+      <!-- Глобальные сообщения Django (в твоём стиле карточек) -->
+      {% if messages %}
+        <div class="content" style="padding-bottom:0">
+          <div style="max-width:1280px;margin:0 auto;">
+            {% for message in messages %}
+              <div class="card" style="
+                    margin:0 0 12px 0;
+                    border-left:4px solid
+                      {% if message.tags == 'success' %}#18a957
+                      {% elif message.tags == 'error' or message.tags == 'danger' %}#d64545
+                      {% elif message.tags == 'warning' %}#f0ad4e
+                      {% else %}#0e4aa8{% endif %};
+                ">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Основной контент страниц -->
       <section class="content">
         {% block content %}{% endblock %}
       </section>
     </main>
   </div>
 
+  <!-- Скрипты конкретных страниц -->
   {% block scripts %}{% endblock %}
+
+  <!-- Глобальные скрипты проекта -->
+  <script src="{% static 'js/alerts.js' %}"></script>
 </body>
 </html>
