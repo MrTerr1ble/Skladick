@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Создать перемещение{% endblock %}
+
+{% block topbar %}
+<div class="topbar">
+  <div class="tabs"><div class="tab active">СОЗДАНИЕ ПЕРЕМЕЩЕНИЯ</div></div>
+  <div class="profile">
+    <a class="btn ghost" href="{% url 'inventory:movement_list' %}">Назад</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <form method="post" class="card" id="mvForm">
+    {% csrf_token %}
+    <div class="toolbar">
+      <button class="btn primary" type="submit">Сохранить</button>
+      <a class="btn ghost" href="{% url 'inventory:movement_list' %}">Отмена</a>
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="field">
+        <div class="input" style="border-color:#d64545;color:#d64545;background:#fff5f5">
+          {{ form.non_field_errors }}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="field">
+      <label class="label">Тип операции</label>
+      {{ form.type }}
+    </div>
+    <div class="field">
+      <label class="label">Дата/время</label>
+      {{ form.occurred_at }}
+    </div>
+
+    <div class="field">
+      <label class="label">Номенклатура</label>
+      {{ form.item }}
+    </div>
+
+    <div class="field">
+      <label class="label">Количество</label>
+      {{ form.qty }}
+    </div>
+
+    <div class="field">
+      <label class="label">Единица измерения</label>
+      {{ form.uom }}
+    </div>
+
+    <div class="field" id="fromField">
+      <label class="label">Откуда (локация)</label>
+      {{ form.from_location }}
+    </div>
+
+    <div class="field" id="toField">
+      <label class="label">Куда (локация)</label>
+      {{ form.to_location }}
+    </div>
+
+    <div class="field">
+      <label class="label">Примечание</label>
+      {{ form.note }}
+    </div>
+
+    {% for f in form %}
+      {% for e in f.errors %}
+        <div class="label" style="color:#d64545">{{ e }}</div>
+      {% endfor %}
+    {% endfor %}
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // динамическое скрытие полей в зависимости от типа
+  const typeSel = document.querySelector('#mvForm [name="type"]');
+  const fromF = document.getElementById('fromField');
+  const toF = document.getElementById('toField');
+  function toggleFields(){
+    const t = typeSel.value;
+    // ожидание, что значения: 'TRANSFER', 'ISSUE', 'RECEIPT'
+    if(t === 'TRANSFER'){ fromF.style.display='block'; toF.style.display='block'; }
+    else if(t === 'ISSUE'){ fromF.style.display='block'; toF.style.display='none'; }
+    else if(t === 'RECEIPT'){ fromF.style.display='none'; toF.style.display='block'; }
+    else { fromF.style.display='block'; toF.style.display='block'; }
+  }
+  typeSel.addEventListener('change', toggleFields);
+  toggleFields();
+</script>
+{% endblock %}

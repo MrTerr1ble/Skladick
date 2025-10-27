@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Перемещения{% endblock %}
+
+{% block topbar %}
+<div class="topbar">
+  <div class="tabs"><div class="tab active">ПЕРЕМЕЩЕНИЯ</div></div>
+  <div class="profile">
+    <a class="btn primary" href="{% url 'inventory:movement_create' %}">Создать</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="table-card">
+    <div class="table-toolbar">
+      <form method="get" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+        <select class="input" name="type">
+          <option value="">Тип: все</option>
+          {% for key, label in types %}
+            <option value="{{ key }}" {% if request.GET.type == key %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <select class="input" name="warehouse">
+          <option value="">Склад: все</option>
+          {% for w in warehouses %}
+            <option value="{{ w.id }}" {% if request.GET.warehouse == w.id|stringformat:'s' %}selected{% endif %}>{{ w.name }}</option>
+          {% endfor %}
+        </select>
+        <select class="input" name="item">
+          <option value="">Номенклатура: все</option>
+          {% for it in items %}
+            <option value="{{ it.id }}" {% if request.GET.item == it.id|stringformat:'s' %}selected{% endif %}>{{ it.name }}</option>
+          {% endfor %}
+        </select>
+        <input class="input" type="date" name="date_from" value="{{ request.GET.date_from }}" />
+        <input class="input" type="date" name="date_to" value="{{ request.GET.date_to }}" />
+        <button class="btn">Применить</button>
+      </form>
+    </div>
+
+    <div style="overflow:auto">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Дата/время</th>
+            <th>Тип</th>
+            <th>Номенклатура</th>
+            <th>Кол-во</th>
+            <th>ЕИ</th>
+            <th>Откуда</th>
+            <th>Куда</th>
+            <th>Оператор</th>
+            <th>Примечание</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in moves %}
+            <tr>
+              <td>{{ m.occurred_at|date:"d.m.Y H:i" }}</td>
+              <td>{{ m.get_type_display }}</td>
+              <td>{{ m.item }}</td>
+              <td>{{ m.qty }}</td>
+              <td>{{ m.uom.code }}</td>
+              <td>{% if m.from_location %}{{ m.from_location.warehouse.name }}/{{ m.from_location.code }}{% else %}—{% endif %}</td>
+              <td>{% if m.to_location %}{{ m.to_location.warehouse.name }}/{{ m.to_location.code }}{% else %}—{% endif %}</td>
+              <td>{{ m.actor|default:"—" }}</td>
+              <td>{{ m.note|default:"—" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="9" style="padding:16px">Записей нет</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+      <div style="padding:14px; display:flex; gap:10px; align-items:center; justify-content:flex-end;">
+        {% if page_obj.has_previous %}
+          <a class="btn ghost" href="?page={{ page_obj.previous_page_number }}">Назад</a>
+        {% endif %}
+        <span style="color:#5e6b85;">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="btn ghost" href="?page={{ page_obj.next_page_number }}">Вперёд</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 from django.db import models
 from decimal import Decimal
 from django.conf import settings
+from django.utils import timezone
 
 
 class Inventory(models.Model):
@@ -30,7 +31,7 @@ class Movement(models.Model):
     ]
 
     type = models.CharField("Тип операции", max_length=16, choices=TYPES)
-    occurred_at = models.DateTimeField("Дата операции", auto_now_add=True)
+    occurred_at = models.DateTimeField(verbose_name="Дата и время", default=timezone.now, editable=True,)
     item = models.ForeignKey("catalog.Item", on_delete=models.PROTECT, verbose_name="Номенклатура")
     from_location = models.ForeignKey(
         "warehouses.Location", null=True, blank=True,

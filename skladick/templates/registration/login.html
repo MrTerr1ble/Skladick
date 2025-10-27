@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — ИСУС</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <style>
+    body {
+      background: #f2f5fa;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .login-card {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 420px;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 600;
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #0b2149;
+    }
+    .field {
+      margin-bottom: 16px;
+    }
+    .label {
+      display: block;
+      font-size: 14px;
+      color: #5e6b85;
+      margin-bottom: 6px;
+    }
+    .input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccd6ea;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    .btn {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      background: #0b57d0;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #0946a7;
+    }
+    .errorlist {
+      color: #d64545;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .extra {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <form method="post" class="login-card">
+    {% csrf_token %}
+    <h1>Вход в систему ИСУС</h1>
+
+    {% if form.non_field_errors %}
+      <div class="errorlist">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="field">
+      <label class="label" for="id_username">Имя пользователя</label>
+      {{ form.username }}
+    </div>
+
+    <div class="field">
+      <label class="label" for="id_password">Пароль</label>
+      {{ form.password }}
+    </div>
+
+    <button type="submit" class="btn">Войти</button>
+
+    <div class="extra">
+      <a href="{% url 'password_reset' %}">Забыли пароль?</a>
+    </div>
+  </form>
+</body>
+</html>

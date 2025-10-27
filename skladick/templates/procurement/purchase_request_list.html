@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Закупки — Заявки{% endblock %}
+
+{% block topbar %}
+<div class="topbar">
+  <div class="tabs">
+    <div class="tab active">ЗАЯВКИ НА ЗАКУПКУ</div>
+  </div>
+  <div class="profile">
+    <span class="badge">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a2 2 0 0 1 2 2v1.1a7 7 0 0 1 5 6.9v3l2 2v1H3v-1l2-2v-3a7 7 0 0 1 5-6.9V4a2 2 0 0 1 2-2Z"/></svg>
+      Закупки
+    </span>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">   <!-- NEW -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <a class="btn primary" href="{% url 'procurement:purchase_request_create' %}">НОВАЯ ЗАЯВКА</a>
+    </div>
+
+    {% if purchase_requests %}
+      <div style="overflow:auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Номер</th>
+              <th>Номенклатура</th>
+              <th>Кол-во</th>
+              <th>Статус</th>
+              <th>Склад</th>
+              <th>Автор</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pr in purchase_requests %}
+              <tr>
+                <td>{{ pr.number }}</td>
+                <td>{{ pr.item }}</td>
+                <td>{{ pr.qty }} {{ pr.uom.code }}</td>
+                <td>{{ pr.get_state_display }}</td>
+                <td>{{ pr.warehouse }}</td>
+                <td>{{ pr.created_by|default:"—" }}</td>
+                <td class="text-end">
+                  <a class="btn" href="{% url 'procurement:purchase_request_detail' pr.pk %}">Подробнее</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if is_paginated %}
+        <div style="padding:14px; display:flex; gap:10px; align-items:center; justify-content:flex-end;">
+          {% if page_obj.has_previous %}
+            <a class="btn ghost" href="?page={{ page_obj.previous_page_number }}">Назад</a>
+          {% endif %}
+          <span style="color:#5e6b85;">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="btn ghost" href="?page={{ page_obj.next_page_number }}">Вперёд</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% else %}
+      <div style="padding:16px;">Заявок пока нет. Создайте первую!</div>
+    {% endif %}
+  </div>
+</div>  <!-- /container -->
+{% endblock %}

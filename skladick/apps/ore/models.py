@@ -10,6 +10,8 @@ class OreReceipt(models.Model):
     contract = models.FileField("Документ (накладная/контракт)", upload_to="contracts/", blank=True, null=True)
     created_at = models.DateTimeField("Дата приёмки", auto_now_add=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, verbose_name="Оператор")
+    note = models.TextField(blank=True)
+    file = models.FileField(upload_to="ore_docs/", null=True, blank=True)
 
     class Meta:
         verbose_name = "Приёмка руды"

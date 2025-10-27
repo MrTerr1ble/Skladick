@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Алерты порогов{% endblock %}
+
+{% block topbar %}
+<div class="topbar">
+  <div class="tabs"><div class="tab active">АЛЕРТЫ</div></div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="table-card">
+    <div style="overflow:auto">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Статус</th>
+            <th>Важность</th>
+            <th>Склад/Локация</th>
+            <th>Номенклатура</th>
+            <th>Текущее кол-во</th>
+            <th>ЕИ</th>
+            <th>Сообщение</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in alerts %}
+            <tr>
+              <td>{{ a.get_state_display }}</td>
+              <td>{{ a.get_severity_display }}</td>
+              <td>{{ a.warehouse }}{% if a.location %} / {{ a.location.code }}{% endif %}</td>
+              <td>{{ a.item }}</td>
+              <td>{{ a.current_qty }}</td>
+              <td>{{ a.uom.code }}</td>
+              <td>{{ a.message|default:"—" }}</td>
+              <td class="text-end">
+                {% if a.state == "OPEN" %}
+                  <form method="post" action="{% url 'thresholds:alert_action' a.pk 'ack' %}" style="display:inline">{% csrf_token %}<button class="btn">Принять</button></form>
+                  <form method="post" action="{% url 'thresholds:alert_action' a.pk 'close' %}" style="display:inline">{% csrf_token %}<button class="btn danger">Закрыть</button></form>
+                {% elif a.state == "ACK" %}
+                  <form method="post" action="{% url 'thresholds:alert_action' a.pk 'close' %}" style="display:inline">{% csrf_token %}<button class="btn danger">Закрыть</button></form>
+                {% else %} — {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="8" style="padding:16px">Алертов нет</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

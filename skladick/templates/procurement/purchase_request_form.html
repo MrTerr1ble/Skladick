@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if form.instance.pk %}Редактирование заявки{% else %}Новая заявка{% endif %}
+{% endblock %}
+
+{% block topbar %}
+<div class="topbar">
+  <div class="tabs">
+    <div class="tab active">
+      {% if form.instance.pk %}РЕДАКТИРОВАНИЕ{% else %}НОВАЯ ЗАЯВКА{% endif %}
+    </div>
+  </div>
+  <div class="profile">
+    <a class="btn ghost" href="{% url 'procurement:purchase_request_list' %}">Назад</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="card">
+  <div class="card-body">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="field">
+        <div class="input" style="border-color:#d64545;color:#d64545;background:#fff5f5">
+          {{ form.non_field_errors }}
+        </div>
+      </div>
+    {% endif %}
+
+    {% for field in form %}
+      <div class="field">
+        <label class="label" for="{{ field.id_for_label }}">
+          {{ field.label }}{% if field.field.required %} <span style="color:#d64545">*</span>{% endif %}
+        </label>
+        {{ field }}
+        {% if field.help_text %}<div class="label" style="color:#8a93a3">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}
+          <div class="label" style="color:#d64545">{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="toolbar" style="justify-content:space-between">
+    <a class="btn ghost" href="{% url 'procurement:purchase_request_list' %}">Отмена</a>
+    <button type="submit" class="btn primary">Сохранить</button>
+  </div>
+</form>
+{% endblock %}

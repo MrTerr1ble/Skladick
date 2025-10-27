@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Приёмка руды — Создание{% endblock %}
+
+{% block topbar %}
+<div class="topbar">
+  <div class="tabs"><div class="tab active">СОЗДАНИЕ</div></div>
+  <div class="profile"><a class="btn ghost" href="{% url 'ore:receipt_list' %}">Назад</a></div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="grid">
+    <form method="post" enctype="multipart/form-data" class="card" id="receiptForm">
+      {% csrf_token %}
+      <div class="toolbar">
+        <button class="btn primary" type="submit">СОХРАНИТЬ</button>
+        <button class="btn ghost" type="button" onclick="history.back()">ОТМЕНИТЬ</button>
+      </div>
+
+      <div class="field">
+        <label class="label">Локация</label>
+        {{ form.location }}
+      </div>
+      <div class="field">
+        <label class="label">Номенклатура</label>
+        {{ form.item }}
+      </div>
+      <div class="field">
+        <label class="label">Вес по данным весов</label>
+        {{ form.quantity }}
+      </div>
+      <div class="field">
+        <label class="label">Документ</label>
+        {{ form.contract }}
+      </div>
+      <div class="field">
+        <label class="label">Примечание</label>
+        {{ form.note }}
+      </div>
+      <div class="field">
+        <label class="label">Файл</label>
+        {{ form.file }}
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="field">
+          <div class="input" style="border-color:#d64545;color:#d64545;background:#fff5f5">
+            {{ form.non_field_errors }}
+          </div>
+        </div>
+      {% endif %}
+      {% for f in form %}
+        {% for e in f.errors %}
+          <div class="label" style="color:#d64545">{{ e }}</div>
+        {% endfor %}
+      {% endfor %}
+    </form>
+
+    <div class="preview" id="previewBox">
+      предпросмотр документа
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // живой предпросмотр
+  const form = document.getElementById('receiptForm');
+  const preview = document.getElementById('previewBox');
+  function renderPreview(){
+    const loc = form.querySelector('[name="location"]')?.selectedOptions[0]?.textContent || '—';
+    const item = form.querySelector('[name="item"]')?.selectedOptions[0]?.textContent || '—';
+    const qty = form.querySelector('#f_quantity')?.value || '—';
+    const doc = form.querySelector('#f_contract')?.value || '—';
+    const note = form.querySelector('#f_note')?.value || '—';
+    const file = form.querySelector('#f_file')?.files?.[0]?.name || '—';
+    preview.innerHTML = `
+      <div style="text-align:left; max-width:520px">
+        <h3 style="margin-top:0">Акт приёмки (черновик)</h3>
+        <p><strong>Локация:</strong> ${loc}</p>
+        <p><strong>Номенклатура:</strong> ${item}</p>
+        <p><strong>Вес:</strong> ${qty}</p>
+        <p><strong>Документ:</strong> ${doc}</p>
+        <p><strong>Примечание:</strong> ${note}</p>
+        <p><strong>Файл:</strong> ${file}</p>
+      </div>`;
+  }
+  form.addEventListener('input', renderPreview);
+  form.addEventListener('change', renderPreview);
+  renderPreview();
+</script>
+{% endblock %}

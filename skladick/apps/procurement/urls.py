@@ -5,6 +5,7 @@ from .views import (
     PurchaseRequestDetailView,
     PurchaseRequestListView,
     PurchaseRequestUpdateView,
+    PurchaseRequestStatusChangeView
 )
 
 
@@ -16,5 +17,5 @@ urlpatterns = [
     path("create/", PurchaseRequestCreateView.as_view(), name="purchase_request_create"),
     path("<int:pk>/", PurchaseRequestDetailView.as_view(), name="purchase_request_detail"),
     path("<int:pk>/edit/", PurchaseRequestUpdateView.as_view(), name="purchase_request_update"),
+    path("<int:pk>/status/<str:action>/", PurchaseRequestStatusChangeView.as_view(), name="purchase_request_status_change"),
 ]
-

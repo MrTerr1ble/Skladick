@@ -1,6 +1,10 @@
 from django import forms
-
 from .models import PurchaseRequest
+
+INPUT = {"class": "input"}
+SELECT = {"class": "input"}
+TEXTAREA = {"class": "textarea"}
+FILE = {"class": "file"}
 
 
 class PurchaseRequestForm(forms.ModelForm):
@@ -24,12 +28,12 @@ class PurchaseRequestForm(forms.ModelForm):
             "attachment",
         ]
         widgets = {
-            "number": forms.TextInput(attrs={"class": "form-control"}),
-            "item": forms.Select(attrs={"class": "form-select"}),
-            "qty": forms.NumberInput(attrs={"class": "form-control", "step": "0.001"}),
-            "uom": forms.Select(attrs={"class": "form-select"}),
-            "warehouse": forms.Select(attrs={"class": "form-select"}),
-            "supplier": forms.Select(attrs={"class": "form-select"}),
-            "comment": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+            "number": forms.TextInput(attrs=INPUT),
+            "item": forms.Select(attrs=SELECT),
+            "qty": forms.NumberInput(attrs={**INPUT, "step": "0.001"}),
+            "uom": forms.Select(attrs=SELECT),
+            "warehouse": forms.Select(attrs=SELECT),
+            "supplier": forms.Select(attrs=SELECT),
+            "comment": forms.Textarea(attrs={**TEXTAREA, "rows": 4}),
+            "attachment": forms.ClearableFileInput(attrs=FILE),
         }
-

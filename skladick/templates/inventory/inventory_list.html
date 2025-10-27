@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Остатки{% endblock %}
+
+{% block topbar %}
+<div class="topbar">
+  <div class="tabs"><div class="tab active">ОСТАТКИ</div></div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="table-card">
+    <div class="table-toolbar">
+      <form method="get" style="display:flex; gap:10px; flex-wrap:wrap">
+        <select class="input" name="warehouse">
+          <option value="">Склад: все</option>
+          {% for w in warehouses %}
+            <option value="{{ w.id }}" {% if request.GET.warehouse == w.id|stringformat:'s' %}selected{% endif %}>{{ w.name }}</option>
+          {% endfor %}
+        </select>
+        <select class="input" name="item">
+          <option value="">Номенклатура: все</option>
+          {% for it in items %}
+            <option value="{{ it.id }}" {% if request.GET.item == it.id|stringformat:'s' %}selected{% endif %}>{{ it.name }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn">Применить</button>
+      </form>
+    </div>
+
+    <div style="overflow:auto">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Склад</th>
+            <th>Локация</th>
+            <th>Номенклатура</th>
+            <th>Кол-во</th>
+            <th>ЕИ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td>{{ r.location.warehouse.name }}</td>
+              <td>{{ r.location.code }}</td>
+              <td>{{ r.item.name }}</td>
+              <td>{{ r.qty_on_hand }}</td>
+              <td>{{ r.uom.code }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" style="padding:16px">Нет данных</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
