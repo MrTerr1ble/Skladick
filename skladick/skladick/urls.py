@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
+
+from apps.reports.views import DashboardView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -16,7 +17,7 @@ urlpatterns = [
     path("thresholds/", include(("apps.thresholds.urls", "thresholds"), namespace="thresholds")),
     path("procurement/", include(("apps.procurement.urls", "procurement"), namespace="procurement")),
 
-    path("", RedirectView.as_view(pattern_name="ore:receipt_list", permanent=False)),
+    path("", DashboardView.as_view(), name="dashboard"),
 ]
 
 if settings.DEBUG:
