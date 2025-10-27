@@ -22,40 +22,41 @@
       <div class="field">
         <label class="label">Локация</label>
         {{ form.location }}
+        {% for error in form.location.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
       </div>
       <div class="field">
         <label class="label">Номенклатура</label>
         {{ form.item }}
+        {% for error in form.item.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
       </div>
       <div class="field">
         <label class="label">Вес по данным весов</label>
         {{ form.quantity }}
+        {% for error in form.quantity.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
       </div>
       <div class="field">
         <label class="label">Документ</label>
         {{ form.contract }}
+        {% for error in form.contract.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
       </div>
       <div class="field">
         <label class="label">Примечание</label>
         {{ form.note }}
+        {% for error in form.note.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
       </div>
       <div class="field">
         <label class="label">Файл</label>
         {{ form.file }}
+        {% for error in form.file.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
       </div>
 
       {% if form.non_field_errors %}
         <div class="field">
-          <div class="input" style="border-color:#d64545;color:#d64545;background:#fff5f5">
+          <div class="input error">
             {{ form.non_field_errors }}
           </div>
         </div>
       {% endif %}
-      {% for f in form %}
-        {% for e in f.errors %}
-          <div class="label" style="color:#d64545">{{ e }}</div>
-        {% endfor %}
-      {% endfor %}
     </form>
 
     <div class="preview" id="previewBox">

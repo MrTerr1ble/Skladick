@@ -10,7 +10,7 @@
 {% block content %}
 <div class="container">
   <div class="table-card">
-    <div style="overflow:auto">
+    <div class="table-wrapper">
       <table class="table">
         <thead>
           <tr>
@@ -36,15 +36,17 @@
               <td>{{ a.message|default:"—" }}</td>
               <td class="text-end">
                 {% if a.state == "OPEN" %}
-                  <form method="post" action="{% url 'thresholds:alert_action' a.pk 'ack' %}" style="display:inline">{% csrf_token %}<button class="btn">Принять</button></form>
-                  <form method="post" action="{% url 'thresholds:alert_action' a.pk 'close' %}" style="display:inline">{% csrf_token %}<button class="btn danger">Закрыть</button></form>
+                  <form method="post" action="{% url 'thresholds:alert_action' a.pk 'ack' %}" class="inline-form">{% csrf_token %}<button class="btn">Принять</button></form>
+                  <form method="post" action="{% url 'thresholds:alert_action' a.pk 'close' %}" class="inline-form">{% csrf_token %}<button class="btn danger">Закрыть</button></form>
                 {% elif a.state == "ACK" %}
-                  <form method="post" action="{% url 'thresholds:alert_action' a.pk 'close' %}" style="display:inline">{% csrf_token %}<button class="btn danger">Закрыть</button></form>
+                  <form method="post" action="{% url 'thresholds:alert_action' a.pk 'close' %}" class="inline-form">{% csrf_token %}<button class="btn danger">Закрыть</button></form>
                 {% else %} — {% endif %}
               </td>
             </tr>
           {% empty %}
-            <tr><td colspan="8" style="padding:16px">Алертов нет</td></tr>
+            <tr>
+              <td colspan="8" class="notice">Алертов нет</td>
+            </tr>
           {% endfor %}
         </tbody>
       </table>

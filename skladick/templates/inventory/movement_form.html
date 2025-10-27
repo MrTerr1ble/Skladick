@@ -21,7 +21,7 @@
 
     {% if form.non_field_errors %}
       <div class="field">
-        <div class="input" style="border-color:#d64545;color:#d64545;background:#fff5f5">
+        <div class="input error">
           {{ form.non_field_errors }}
         </div>
       </div>
@@ -30,47 +30,49 @@
     <div class="field">
       <label class="label">Тип операции</label>
       {{ form.type }}
+      {% for error in form.type.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
     </div>
     <div class="field">
       <label class="label">Дата/время</label>
       {{ form.occurred_at }}
+      {% for error in form.occurred_at.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
     </div>
 
     <div class="field">
       <label class="label">Номенклатура</label>
       {{ form.item }}
+      {% for error in form.item.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
     </div>
 
     <div class="field">
       <label class="label">Количество</label>
       {{ form.qty }}
+      {% for error in form.qty.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
     </div>
 
     <div class="field">
       <label class="label">Единица измерения</label>
       {{ form.uom }}
+      {% for error in form.uom.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
     </div>
 
     <div class="field" id="fromField">
       <label class="label">Откуда (локация)</label>
       {{ form.from_location }}
+      {% for error in form.from_location.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
     </div>
 
     <div class="field" id="toField">
       <label class="label">Куда (локация)</label>
       {{ form.to_location }}
+      {% for error in form.to_location.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
     </div>
 
     <div class="field">
       <label class="label">Примечание</label>
       {{ form.note }}
+      {% for error in form.note.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
     </div>
-
-    {% for f in form %}
-      {% for e in f.errors %}
-        <div class="label" style="color:#d64545">{{ e }}</div>
-      {% endfor %}
-    {% endfor %}
   </form>
 </div>
 {% endblock %}

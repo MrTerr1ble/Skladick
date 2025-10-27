@@ -1,11 +1,26 @@
 <aside class="sidebar">
   <div class="logo">ИСУС</div>
   <nav class="nav">
-    <a href="{% url 'ore:receipt_list' %}" class="{% if request.resolver_match.namespace == 'ore' %}active{% endif %}">ПРИЕМКА ПАРТИИ</a>
-    <a href="{% url 'inventory:inventory_list' %}" class="{% if request.resolver_match.namespace == 'inventory' %}active{% endif %}">РАЗМЕЩЕНИЕ НА СКЛАДЕ</a>
-    <a href="{% url 'inventory:movement_list' %}" class="{% if request.resolver_match.url_name|default:''|slice:':8' == 'movement' %}active{% endif %}"> ПЕРЕМЕЩЕНИЯ</a>
-    <a href="{% url 'thresholds:alert_list' %}" class="{% if request.resolver_match.namespace == 'thresholds' %}active{% endif %}">КОНТРОЛЬ</a>
-    <a href="{% url 'procurement:purchase_request_list' %}" class="{% if request.resolver_match.namespace == 'procurement' %}active{% endif %}">ЗАКУПКИ</a>
+    <a
+      href="{% url 'ore:receipt_list' %}"
+      class="{% if request.resolver_match.namespace == 'ore' %}active{% endif %}"
+    >ПРИЁМКА ПАРТИИ</a>
+    <a
+      href="{% url 'inventory:inventory_list' %}"
+      class="{% if request.resolver_match.namespace == 'inventory' and request.resolver_match.url_name|default:''|slice:':9' == 'inventory' %}active{% endif %}"
+    >РАЗМЕЩЕНИЕ НА СКЛАДЕ</a>
+    <a
+      href="{% url 'inventory:movement_list' %}"
+      class="{% if request.resolver_match.namespace == 'inventory' and request.resolver_match.url_name|default:''|slice:':8' == 'movement' %}active{% endif %}"
+    >ПЕРЕМЕЩЕНИЯ</a>
+    <a
+      href="{% url 'thresholds:alert_list' %}"
+      class="{% if request.resolver_match.namespace == 'thresholds' %}active{% endif %}"
+    >КОНТРОЛЬ</a>
+    <a
+      href="{% url 'procurement:purchase_request_list' %}"
+      class="{% if request.resolver_match.namespace == 'procurement' %}active{% endif %}"
+    >ЗАКУПКИ</a>
   </nav>
   <div class="spacer"></div>
 </aside>
