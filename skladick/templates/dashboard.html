@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Дашборд — Склад{% endblock %}
+
+{% block head %}
+<style>
+  .dashboard-grid {
+    display: grid;
+    gap: 24px;
+  }
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .metric-card .metric-title {
+    color: var(--muted);
+    font-size: 14px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .metric-card .metric-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--brand);
+  }
+  .metric-card .metric-subtext {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .table-card table td:first-child {
+    text-align: left;
+  }
+</style>
+{% endblock %}
+
+{% block topbar %}
+<div class="topbar">
+  <div class="tabs"><div class="tab active">Дашборд</div></div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="dashboard-grid">
+    <div class="metrics-grid">
+      <div class="card metric-card">
+        <div class="card-body">
+          <span class="metric-title">Остатков всего</span>
+          <span class="metric-value">{{ inventory_total|floatformat:3 }}</span>
+          <span class="metric-subtext">по всем локациям</span>
+        </div>
+      </div>
+      <div class="card metric-card">
+        <div class="card-body">
+          <span class="metric-title">Открытых алертов</span>
+          <span class="metric-value">{{ open_alerts_count }}</span>
+          <span class="metric-subtext">требуют внимания</span>
+        </div>
+      </div>
+      <div class="card metric-card">
+        <div class="card-body">
+          <span class="metric-title">Активных заявок</span>
+          <span class="metric-value">{{ active_purchase_requests_count }}</span>
+          <span class="metric-subtext">на этапе согласования</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-toolbar">
+        <h3 style="margin:0;font-size:18px;">Последние приёмки</h3>
+      </div>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="text-align:left;">№</th>
+              <th>Локация</th>
+              <th>Номенклатура</th>
+              <th>Кол-во</th>
+              <th>Дата/время</th>
+              <th>Оператор</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for receipt in recent_receipts %}
+              <tr>
+                <td style="text-align:left;">{{ receipt.id }}</td>
+                <td>{{ receipt.location }}</td>
+                <td>{{ receipt.item }}</td>
+                <td>{{ receipt.quantity|floatformat:3 }}</td>
+                <td>{{ receipt.created_at|date:"d.m.Y H:i" }}</td>
+                <td>{{ receipt.created_by|default:"—" }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="notice">Пока нет приёмок</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
