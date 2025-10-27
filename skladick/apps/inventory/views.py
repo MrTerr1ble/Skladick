@@ -27,6 +27,10 @@ class InventoryListView(LoginRequiredMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         ctx["warehouses"] = Warehouse.objects.all().order_by("name")
         ctx["items"] = Item.objects.all().order_by("name")[:500]
+        query = self.request.GET.copy()
+        if "page" in query:
+            query.pop("page")
+        ctx["querystring"] = query.urlencode()
         return ctx
 
 
@@ -71,6 +75,10 @@ class MovementListView(LoginRequiredMixin, ListView):
         ctx["types"] = Movement.TYPES
         ctx["warehouses"] = Warehouse.objects.all().order_by("name")
         ctx["items"] = Item.objects.all().order_by("name")[:500]
+        query = self.request.GET.copy()
+        if "page" in query:
+            query.pop("page")
+        ctx["querystring"] = query.urlencode()
         return ctx
 
 

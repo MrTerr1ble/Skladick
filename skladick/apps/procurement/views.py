@@ -18,6 +18,14 @@ class PurchaseRequestListView(LoginRequiredMixin, ListView):
     template_name = "procurement/purchase_request_list.html"
     paginate_by = 20
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        query = self.request.GET.copy()
+        if "page" in query:
+            query.pop("page")
+        ctx["querystring"] = query.urlencode()
+        return ctx
+
 
 class PurchaseRequestDetailView(LoginRequiredMixin, DetailView):
     """Просмотр заявки на закупку."""

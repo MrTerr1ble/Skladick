@@ -12,6 +12,14 @@ class ReceiptListView(LoginRequiredMixin, ListView):
     paginate_by = 20
     ordering = "-created_at"
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        query = self.request.GET.copy()
+        if "page" in query:
+            query.pop("page")
+        ctx["querystring"] = query.urlencode()
+        return ctx
+
 
 class ReceiptCreateView(LoginRequiredMixin, CreateView):
     model = OreReceipt

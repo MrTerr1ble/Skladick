@@ -14,6 +14,14 @@ class AlertListView(LoginRequiredMixin, ListView):
     paginate_by = 50
     ordering = "-created_at"
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        query = self.request.GET.copy()
+        if "page" in query:
+            query.pop("page")
+        ctx["querystring"] = query.urlencode()
+        return ctx
+
 
 @login_required
 def alert_action(request, pk, action):
