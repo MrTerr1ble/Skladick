@@ -14,7 +14,7 @@
 <div class="container">
   <div class="table-card">
     <div class="table-toolbar">
-      <form method="get" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+      <form method="get" class="filter-form">
         <select class="input" name="type">
           <option value="">Тип: все</option>
           {% for key, label in types %}
@@ -39,7 +39,7 @@
       </form>
     </div>
 
-    <div style="overflow:auto">
+    <div class="table-wrapper">
       <table class="table">
         <thead>
           <tr>
@@ -68,18 +68,20 @@
               <td>{{ m.note|default:"—" }}</td>
             </tr>
           {% empty %}
-            <tr><td colspan="9" style="padding:16px">Записей нет</td></tr>
+            <tr>
+              <td colspan="9" class="notice">Записей нет</td>
+            </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
 
     {% if is_paginated %}
-      <div style="padding:14px; display:flex; gap:10px; align-items:center; justify-content:flex-end;">
+      <div class="pagination">
         {% if page_obj.has_previous %}
           <a class="btn ghost" href="?page={{ page_obj.previous_page_number }}">Назад</a>
         {% endif %}
-        <span style="color:#5e6b85;">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+        <span class="muted">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.has_next %}
           <a class="btn ghost" href="?page={{ page_obj.next_page_number }}">Вперёд</a>
         {% endif %}

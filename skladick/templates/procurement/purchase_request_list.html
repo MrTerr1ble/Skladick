@@ -17,14 +17,14 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">   <!-- NEW -->
+<div class="container">
   <div class="table-card">
     <div class="table-toolbar">
       <a class="btn primary" href="{% url 'procurement:purchase_request_create' %}">НОВАЯ ЗАЯВКА</a>
     </div>
 
     {% if purchase_requests %}
-      <div style="overflow:auto">
+      <div class="table-wrapper">
         <table class="table">
           <thead>
             <tr>
@@ -56,19 +56,19 @@
       </div>
 
       {% if is_paginated %}
-        <div style="padding:14px; display:flex; gap:10px; align-items:center; justify-content:flex-end;">
+        <div class="pagination">
           {% if page_obj.has_previous %}
             <a class="btn ghost" href="?page={{ page_obj.previous_page_number }}">Назад</a>
           {% endif %}
-          <span style="color:#5e6b85;">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+          <span class="muted">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
           {% if page_obj.has_next %}
             <a class="btn ghost" href="?page={{ page_obj.next_page_number }}">Вперёд</a>
           {% endif %}
         </div>
       {% endif %}
     {% else %}
-      <div style="padding:16px;">Заявок пока нет. Создайте первую!</div>
+      <div class="notice">Заявок пока нет. Создайте первую!</div>
     {% endif %}
   </div>
-</div>  <!-- /container -->
+</div>
 {% endblock %}

@@ -15,54 +15,62 @@
 {% endblock %}
 
 {% block content %}
-<div class="card">
-  <div class="field"><span class="label">Статус</span>
-    <div class="input" style="border:none;padding:0">{{ purchase_request.get_state_display }}</div>
-  </div>
-  <div class="field"><span class="label">Номенклатура</span>
-    <div class="input" style="border:none;padding:0">{{ purchase_request.item }}</div>
-  </div>
-  <div class="field"><span class="label">Количество</span>
-    <div class="input" style="border:none;padding:0">{{ purchase_request.qty }} {{ purchase_request.uom.code }}</div>
-  </div>
-  <div class="field"><span class="label">Склад</span>
-    <div class="input" style="border:none;padding:0">{{ purchase_request.warehouse }}</div>
-  </div>
-  <div class="field"><span class="label">Поставщик</span>
-    <div class="input" style="border:none;padding:0">{{ purchase_request.supplier|default:"—" }}</div>
-  </div>
-  <div class="field"><span class="label">Комментарий</span>
-    <div class="input" style="border:none;padding:0">{{ purchase_request.comment|default:"—" }}</div>
-  </div>
-  <div class="field"><span class="label">Файл</span>
-    <div class="input" style="border:none;padding:0">
-      {% if purchase_request.attachment %}
-        <a href="{{ purchase_request.attachment.url }}" target="_blank">Скачать</a>
-      {% else %} — {% endif %}
+<div class="container">
+  <div class="card">
+    <div class="field">
+      <span class="label">Статус</span>
+      <div class="value">{{ purchase_request.get_state_display }}</div>
+    </div>
+    <div class="field">
+      <span class="label">Номенклатура</span>
+      <div class="value">{{ purchase_request.item }}</div>
+    </div>
+    <div class="field">
+      <span class="label">Количество</span>
+      <div class="value">{{ purchase_request.qty }} {{ purchase_request.uom.code }}</div>
+    </div>
+    <div class="field">
+      <span class="label">Склад</span>
+      <div class="value">{{ purchase_request.warehouse }}</div>
+    </div>
+    <div class="field">
+      <span class="label">Поставщик</span>
+      <div class="value">{{ purchase_request.supplier|default:"—" }}</div>
+    </div>
+    <div class="field">
+      <span class="label">Комментарий</span>
+      <div class="value">{{ purchase_request.comment|default:"—" }}</div>
+    </div>
+    <div class="field">
+      <span class="label">Файл</span>
+      <div class="value">
+        {% if purchase_request.attachment %}
+          <a href="{{ purchase_request.attachment.url }}" target="_blank">Скачать</a>
+        {% else %} — {% endif %}
+      </div>
     </div>
   </div>
-</div>
 
-<!-- панель действий -->
-<div class="toolbar" style="margin-top:20px">
-  {% if purchase_request.state == 'DRAFT' %}
-    <form method="post" action="{% url 'procurement:purchase_request_status_change' purchase_request.pk 'submit' %}">
-      {% csrf_token %}
-      <button class="btn primary" type="submit">Отправить на утверждение</button>
-    </form>
-  {% elif purchase_request.state == 'SUBMITTED' %}
-    <form method="post" action="{% url 'procurement:purchase_request_status_change' purchase_request.pk 'approve' %}">
-      {% csrf_token %}
-      <button class="btn primary" type="submit">Утвердить</button>
-    </form>
-    <form method="post" action="{% url 'procurement:purchase_request_status_change' purchase_request.pk 'reject' %}">
-      {% csrf_token %}
-      <button class="btn danger" type="submit">Отклонить</button>
-    </form>
-  {% elif purchase_request.state == 'APPROVED' %}
-    <div style="color:#18a957; font-weight:600">✅ Заявка утверждена</div>
-  {% elif purchase_request.state == 'REJECTED' %}
-    <div style="color:#d64545; font-weight:600">❌ Заявка отклонена</div>
-  {% endif %}
+  <div class="toolbar spaced">
+    {% if purchase_request.state == 'DRAFT' %}
+      <form method="post" action="{% url 'procurement:purchase_request_status_change' purchase_request.pk 'submit' %}">
+        {% csrf_token %}
+        <button class="btn primary" type="submit">Отправить на утверждение</button>
+      </form>
+    {% elif purchase_request.state == 'SUBMITTED' %}
+      <form method="post" action="{% url 'procurement:purchase_request_status_change' purchase_request.pk 'approve' %}" class="inline-form">
+        {% csrf_token %}
+        <button class="btn primary" type="submit">Утвердить</button>
+      </form>
+      <form method="post" action="{% url 'procurement:purchase_request_status_change' purchase_request.pk 'reject' %}" class="inline-form">
+        {% csrf_token %}
+        <button class="btn danger" type="submit">Отклонить</button>
+      </form>
+    {% elif purchase_request.state == 'APPROVED' %}
+      <div class="text-success">✅ Заявка утверждена</div>
+    {% elif purchase_request.state == 'REJECTED' %}
+      <div class="text-danger">❌ Заявка отклонена</div>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}

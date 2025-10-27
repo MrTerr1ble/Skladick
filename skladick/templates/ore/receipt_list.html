@@ -11,7 +11,7 @@
 {% block content %}
 <div class="container">
   <div class="table-card">
-    <div style="overflow:auto">
+    <div class="table-wrapper">
       <table class="table">
         <thead>
           <tr>
@@ -36,18 +36,20 @@
               <td>{{ r.created_by|default:"—" }}</td>
             </tr>
           {% empty %}
-            <tr><td colspan="7" style="padding:18px">Записей пока нет</td></tr>
+            <tr>
+              <td colspan="7" class="notice">Записей пока нет</td>
+            </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
 
     {% if is_paginated %}
-      <div style="padding:14px; display:flex; gap:10px; align-items:center; justify-content:flex-end;">
+      <div class="pagination">
         {% if page_obj.has_previous %}
           <a class="btn ghost" href="?page={{ page_obj.previous_page_number }}">Назад</a>
         {% endif %}
-        <span style="color:#5e6b85;">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+        <span class="muted">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.has_next %}
           <a class="btn ghost" href="?page={{ page_obj.next_page_number }}">Вперёд</a>
         {% endif %}
