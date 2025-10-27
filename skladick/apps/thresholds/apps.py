@@ -5,3 +5,6 @@ class ThresholdsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "apps.thresholds"
     verbose_name = "Пороги и алерты"
+
+    def ready(self) -> None:
+        import apps.thresholds.signals

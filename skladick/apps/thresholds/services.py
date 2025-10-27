@@ -6,12 +6,14 @@ def evaluate_thresholds(inv):
     qs = Threshold.objects.filter(is_active=True, item=inv.item, warehouse=inv.location.warehouse)
 
     # приоритет у порога для конкретной локации
-    candidates = qs.filter(location=inv.location) or qs.filter(location__isnull=True)
+    candidates = qs.filter(location=inv.location)
+    if not candidates.exists():
+        candidates = qs.filter(location__isnull=True)
 
     for t in candidates:
         q = inv.qty_on_hand
         under = (t.min_qty is not None and q < t.min_qty)
-        over  = (t.max_qty is not None and q > t.max_qty)
+        over = (t.max_qty is not None and q > t.max_qty)
         if under or over:
             Alert.objects.create(
                 state="OPEN",

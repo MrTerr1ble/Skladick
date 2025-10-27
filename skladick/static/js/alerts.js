@@ -1,5 +1,5 @@
-// static/js/alerts.js
-function showAlertPopup(data) {
+// Показывает всплывающее уведомление
+function showAlertPopup(a) {
   const div = document.createElement("div");
   div.className = "alert-popup";
   div.style.position = "fixed";
@@ -14,29 +14,34 @@ function showAlertPopup(data) {
   div.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
   div.style.zIndex = 10000;
   div.innerHTML = `
-    <strong>⚠ ${data.item}</strong><br>
-    ${data.message}<br>
-    Остаток: ${data.qty} ${data.uom} (${data.warehouse}/${data.location})<br>
+    <strong>⚠ ${a.item__name}</strong><br>
+    ${a.message}<br>
+    Остаток: ${a.current_qty} ${a.uom__code} (${a.warehouse__name}/${a.location__code})<br>
     <button class="btn" style="margin-top:6px;" onclick="window.location.href='/thresholds/alerts/'">Перейти в Контроль</button>
   `;
-
-  // Добавим звук
-  const sound = new Audio("/static/sounds/alert.mp3");
-  sound.play().catch(() => {});
-
   document.body.appendChild(div);
   setTimeout(() => div.remove(), 10000);
 }
 
-function connectAlerts() {
-  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-  const socket = new WebSocket(`${protocol}://${window.location.host}/ws/alerts/`);
+// Периодически проверяет новые алерты
+let lastAlertIds = new Set();
 
-  socket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    showAlertPopup(data);
-  };
-  socket.onclose = () => setTimeout(connectAlerts, 5000); // авто-переподключение
+async function checkAlerts() {
+  try {
+    const r = await fetch("/thresholds/alerts/api/");
+    const alerts = await r.json();
+
+    for (const a of alerts) {
+      if (!lastAlertIds.has(a.id)) {
+        showAlertPopup(a);
+        lastAlertIds.add(a.id);
+      }
+    }
+  } catch (err) {
+    console.error("Ошибка проверки алертов:", err);
+  }
 }
 
-document.addEventListener("DOMContentLoaded", connectAlerts);
+// каждые 15 секунд
+setInterval(checkAlerts, 15000);
+document.addEventListener("DOMContentLoaded", checkAlerts);

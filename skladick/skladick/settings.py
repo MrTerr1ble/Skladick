@@ -33,7 +33,7 @@ INSTALLED_APPS += [
     'apps.warehouses',
     'apps.inventory',
     'apps.ore',
-    "apps.thresholds",
+    "apps.thresholds.apps.ThresholdsConfig",
     "apps.stockpiles",
     "apps.inventory_count",
     "apps.sync",

@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 from .models import Alert
 
 
@@ -22,3 +24,22 @@ def alert_action(request, pk, action):
             alert.state = "CLOSED"
         alert.save(update_fields=["state"])
     return redirect("thresholds:alert_list")
+
+
+@login_required
+def alerts_api(request):
+    """Возвращает последние открытые алерты для уведомлений."""
+    alerts = list(
+        Alert.objects.filter(state="OPEN")
+        .order_by("-created_at")
+        .values(
+            "id",
+            "item__name",
+            "current_qty",
+            "uom__code",
+            "warehouse__name",
+            "location__code",
+            "message"
+        )[:5]
+    )
+    return JsonResponse(alerts, safe=False)
