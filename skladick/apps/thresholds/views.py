@@ -1,9 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.views.generic import ListView
-from django.http import JsonResponse
+
+from apps.catalog.models import Item
+
 from .models import Alert
 
 
@@ -13,6 +16,14 @@ class AlertListView(LoginRequiredMixin, ListView):
     context_object_name = "alerts"
     paginate_by = 50
     ordering = "-created_at"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("warehouse", "location", "item", "uom", "threshold")
+            .exclude(item__kind=Item.ORE)
+        )
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -46,6 +57,7 @@ def alerts_api(request):
     """Возвращает последние открытые алерты для уведомлений."""
     alerts = (
         Alert.objects.filter(state=Alert.OPEN)
+        .exclude(item__kind=Item.ORE)
         .select_related("item", "uom", "warehouse", "location")
         .order_by("-created_at")[:5]
     )

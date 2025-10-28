@@ -21,10 +21,10 @@ class Item(models.Model):
     CONSUMABLE = "CONSUMABLE"
 
     KINDS = [
-        (ORE, "Руды"),
-        (TOOL, "Инструменты"),
+        (ORE, "Руда"),
+        (TOOL, "Инструмент"),
         (EQUIPMENT, "Оборудование"),
-        (CONSUMABLE, "Расходники"),
+        (CONSUMABLE, "Расходник"),
     ]
 
     sku = models.CharField("Артикул", max_length=64, unique=True, db_index=True)

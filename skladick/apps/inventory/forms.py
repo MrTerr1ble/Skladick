@@ -12,6 +12,12 @@ TEXT = {"class": "textarea"}
 
 
 class MovementForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["item"].queryset = (
+            Item.objects.exclude(kind=Item.ORE).order_by("name")
+        )
+
     class Meta:
         model = Movement
         fields = [
@@ -63,8 +69,7 @@ class MovementForm(forms.ModelForm):
                 if not serial:
                     raise forms.ValidationError("Для оборудования укажи серийный номер.")
             elif kind == Item.ORE:
-                # допускаем дробные значения, дополнительных проверок не требуется
-                pass
+                raise forms.ValidationError("Руда учитывается только через раздел стокпайлов.")
 
         if serial and item and item.kind != Item.EQUIPMENT:
             raise forms.ValidationError("Серийный номер указывается только для оборудования.")

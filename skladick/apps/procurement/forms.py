@@ -1,4 +1,7 @@
 from django import forms
+
+from apps.catalog.models import Item
+
 from .models import PurchaseRequest
 
 INPUT = {"class": "input"}
@@ -12,6 +15,8 @@ class PurchaseRequestForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if "item" in self.fields:
+            self.fields["item"].queryset = Item.objects.exclude(kind=Item.ORE).order_by("name")
         if "supplier" in self.fields:
             self.fields["supplier"].empty_label = "—"
 
@@ -37,3 +42,9 @@ class PurchaseRequestForm(forms.ModelForm):
             "comment": forms.Textarea(attrs={**TEXTAREA, "rows": 4}),
             "attachment": forms.ClearableFileInput(attrs=FILE),
         }
+
+    def clean_item(self):
+        item = self.cleaned_data.get("item")
+        if item and item.kind == Item.ORE:
+            raise forms.ValidationError("Руда закупается через специализированный контур.")
+        return item

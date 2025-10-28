@@ -1,46 +1,126 @@
+from django.conf import settings
 from django.db import models
 
 
 class Stockpile(models.Model):
-    """Сток-пайл (куча/резервуар) для руды/сыпучих материалов."""
-    warehouse = models.ForeignKey("warehouses.Warehouse", on_delete=models.CASCADE, verbose_name="Склад")
-    code = models.CharField("Код", max_length=32)
-    name = models.CharField("Название", max_length=128)
-    capacity_qty = models.DecimalField("Вместимость", max_digits=18, decimal_places=3, null=True, blank=True)
-    uom = models.ForeignKey("catalog.Uom", on_delete=models.PROTECT, verbose_name="ЕИ")
+    warehouse = models.ForeignKey("warehouses.Warehouse", on_delete=models.PROTECT)
+    location = models.OneToOneField("warehouses.Location", on_delete=models.PROTECT)
+    code = models.CharField(max_length=50)
+    name = models.CharField(max_length=255)
 
     class Meta:
-        verbose_name = "Сток-пайл"
-        verbose_name_plural = "Сток-пайлы"
+        verbose_name = "Стокпайл"
+        verbose_name_plural = "Стокпайлы"
         unique_together = ("warehouse", "code")
         ordering = ["warehouse__name", "code"]
 
     def __str__(self):
-        return f"{self.warehouse}:{self.code}"
+        return f"{self.code} ({self.warehouse})"
+
+
+class StockpileInventory(models.Model):
+    stockpile = models.ForeignKey(Stockpile, on_delete=models.PROTECT)
+    item = models.ForeignKey(
+        "catalog.Item",
+        on_delete=models.PROTECT,
+        limit_choices_to={"kind": "ORE"},
+    )
+    uom = models.ForeignKey("catalog.Uom", on_delete=models.PROTECT)
+    qty_on_ground = models.DecimalField(max_digits=14, decimal_places=3, default=0)
+
+    class Meta:
+        verbose_name = "Остаток стокпайла"
+        verbose_name_plural = "Остатки стокпайлов"
+        unique_together = ("stockpile", "item")
+
+    def __str__(self):
+        return f"{self.stockpile} — {self.item}: {self.qty_on_ground} {self.uom}"
+
+
+class StockpileMovement(models.Model):
+    RECEIPT, ISSUE, TRANSFER = "RECEIPT", "ISSUE", "TRANSFER"
+    MOVEMENT_CHOICES = [
+        (RECEIPT, "Приход"),
+        (ISSUE, "Расход"),
+        (TRANSFER, "Перемещение"),
+    ]
+
+    movement_type = models.CharField(max_length=16, choices=MOVEMENT_CHOICES)
+    item = models.ForeignKey(
+        "catalog.Item",
+        on_delete=models.PROTECT,
+        limit_choices_to={"kind": "ORE"},
+    )
+    from_stockpile = models.ForeignKey(
+        Stockpile,
+        null=True,
+        blank=True,
+        related_name="movements_out",
+        on_delete=models.PROTECT,
+    )
+    to_stockpile = models.ForeignKey(
+        Stockpile,
+        null=True,
+        blank=True,
+        related_name="movements_in",
+        on_delete=models.PROTECT,
+    )
+    qty = models.DecimalField(max_digits=14, decimal_places=3)
+    uom = models.ForeignKey("catalog.Uom", on_delete=models.PROTECT)
+    occurred_at = models.DateTimeField(auto_now_add=True)
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
+    note = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Движение стокпайла"
+        verbose_name_plural = "Движения стокпайлов"
+        ordering = ["-occurred_at"]
+
+    def __str__(self):
+        return f"{self.get_movement_type_display()} {self.qty} {self.uom} {self.item}"
 
 
 class StockpileThreshold(models.Model):
-    stockpile = models.OneToOneField(Stockpile, on_delete=models.CASCADE, related_name="threshold", verbose_name="Сток-пайл")
-    min_qty = models.DecimalField("Мин. кол-во", max_digits=18, decimal_places=3, null=True, blank=True)
-    max_qty = models.DecimalField("Макс. кол-во", max_digits=18, decimal_places=3, null=True, blank=True)
-    is_active = models.BooleanField("Активен", default=True)
+    stockpile = models.ForeignKey(Stockpile, on_delete=models.CASCADE)
+    item = models.ForeignKey(
+        "catalog.Item",
+        on_delete=models.PROTECT,
+        limit_choices_to={"kind": "ORE"},
+    )
+    min_qty = models.DecimalField(max_digits=14, decimal_places=3, null=True, blank=True)
+    max_qty = models.DecimalField(max_digits=14, decimal_places=3, null=True, blank=True)
+    uom = models.ForeignKey("catalog.Uom", on_delete=models.PROTECT)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = "Порог сток-пайла"
-        verbose_name_plural = "Пороги сток-пайлов"
+        verbose_name = "Порог стокпайла"
+        verbose_name_plural = "Пороги стокпайлов"
+        unique_together = ("stockpile", "item")
+
+    def __str__(self):
+        return f"Порог {self.stockpile} / {self.item}"
 
 
 class StockpileAlert(models.Model):
     OPEN, ACK, CLOSED = "OPEN", "ACK", "CLOSED"
-    WARN, CRIT = "WARN", "CRIT"
+    STATE_CHOICES = [(OPEN, "Открыт"), (ACK, "Принят"), (CLOSED, "Закрыт")]
 
-    stockpile = models.ForeignKey(Stockpile, on_delete=models.CASCADE, verbose_name="Сток-пайл")
-    current_qty = models.DecimalField("Текущее кол-во", max_digits=18, decimal_places=3)
-    severity = models.CharField("Важность", max_length=8, choices=[(WARN, "Внимание"), (CRIT, "Критично")], default=WARN)
-    state = models.CharField("Статус", max_length=8, choices=[(OPEN, "Открыт"), (ACK, "Принят"), (CLOSED, "Закрыт")], default=OPEN)
+    stockpile = models.ForeignKey(Stockpile, on_delete=models.CASCADE)
+    item = models.ForeignKey(
+        "catalog.Item",
+        on_delete=models.PROTECT,
+        limit_choices_to={"kind": "ORE"},
+    )
+    current_qty = models.DecimalField(max_digits=14, decimal_places=3)
+    uom = models.ForeignKey("catalog.Uom", on_delete=models.PROTECT)
+    state = models.CharField(max_length=10, choices=STATE_CHOICES, default=OPEN)
+    message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Алерт сток-пайла"
-        verbose_name_plural = "Алерты сток-пайлов"
+        verbose_name = "Алерт стокпайла"
+        verbose_name_plural = "Алерты стокпайлов"
         ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"[{self.state}] {self.stockpile} / {self.item}"

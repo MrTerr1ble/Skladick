@@ -1,9 +1,11 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django.contrib import messages
-from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
 from django.views import View
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
+
+from apps.catalog.models import Item
 from apps.ore.models import OreReceipt
 
 from .forms import PurchaseRequestForm
@@ -74,28 +76,28 @@ class PurchaseRequestStatusChangeView(LoginRequiredMixin, View):
             pr.state = "APPROVED"
             msg = f"Заявка {pr.number} утверждена."
 
-            # 🔥 создаём автоматическую приёмку руды
-            try:
-                loc = pr.warehouse.location_set.first()  # первая локация склада
-                if not loc:
-                    messages.warning(
-                        request,
-                        f"⚠️ У склада '{pr.warehouse}' нет локаций, приёмка не создана.",
-                    )
-                else:
-                    OreReceipt.objects.create(
-                        location=loc,
-                        item=pr.item,
-                        quantity=pr.qty,
-                        contract=f"Закупка {pr.number}",
-                        created_by=request.user,
-                    )
-                    messages.success(
-                        request,
-                        f"✅ Создан акт приёмки по заявке {pr.number} ({pr.qty} {pr.uom.code})",
-                    )
-            except Exception as e:
-                messages.error(request, f"Ошибка при создании приёмки: {e}")
+            if pr.item.kind == Item.ORE:
+                try:
+                    loc = pr.warehouse.location_set.first()  # первая локация склада
+                    if not loc:
+                        messages.warning(
+                            request,
+                            f"⚠️ У склада '{pr.warehouse}' нет локаций, приёмка не создана.",
+                        )
+                    else:
+                        OreReceipt.objects.create(
+                            location=loc,
+                            item=pr.item,
+                            quantity=pr.qty,
+                            contract=f"Закупка {pr.number}",
+                            created_by=request.user,
+                        )
+                        messages.success(
+                            request,
+                            f"✅ Создан акт приёмки по заявке {pr.number} ({pr.qty} {pr.uom.code})",
+                        )
+                except Exception as e:
+                    messages.error(request, f"Ошибка при создании приёмки: {e}")
 
         # --- Отклонение заявки ---
         elif action == "reject" and pr.state in ["SUBMITTED", "APPROVED"]:

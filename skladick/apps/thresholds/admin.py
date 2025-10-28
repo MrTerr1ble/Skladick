@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import Threshold, Alert
+
+from apps.catalog.models import Item
+
+from .models import Alert, Threshold
 
 
 @admin.register(Threshold)
@@ -10,6 +13,15 @@ class ThresholdAdmin(admin.ModelAdmin):
     autocomplete_fields = ("warehouse", "location", "item", "uom")
     ordering = ("warehouse__name", "location__code", "item__name")
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.exclude(item__kind=Item.ORE)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "item":
+            kwargs.setdefault("queryset", db_field.related_model.objects.exclude(kind=Item.ORE))
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
     list_display = ("state", "severity", "warehouse", "location", "item", "current_qty", "uom", "created_at")
@@ -18,3 +30,12 @@ class AlertAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
     autocomplete_fields = ("warehouse", "location", "item", "uom", "threshold")
     ordering = ("-created_at",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.exclude(item__kind=Item.ORE)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "item":
+            kwargs.setdefault("queryset", db_field.related_model.objects.exclude(kind=Item.ORE))
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
