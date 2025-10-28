@@ -11,11 +11,9 @@ class UomAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ("sku", "name", "base_uom")
-    list_filter = ("base_uom",)
-    search_fields = ("sku", "name", "description")
-    ordering = ("sku",)
-    autocomplete_fields = ("base_uom",)
+    list_display = ("sku", "name", "kind", "base_uom")
+    list_filter = ("kind", "base_uom")
+    search_fields = ("sku", "name")
 
 
 @admin.register(Supplier)
