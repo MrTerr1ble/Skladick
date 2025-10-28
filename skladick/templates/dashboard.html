@@ -78,7 +78,9 @@
               <th>Локация</th>
               <th>Номенклатура</th>
               <th>Кол-во</th>
+              <th>Документ</th>
               <th>Дата/время</th>
+              <th>Примечание</th>
               <th>Оператор</th>
             </tr>
           </thead>
@@ -89,12 +91,20 @@
                 <td>{{ receipt.location }}</td>
                 <td>{{ receipt.item }}</td>
                 <td>{{ receipt.quantity|floatformat:3 }}</td>
+                <td>
+                  {% if receipt.contract %}
+                    <a href="{{ receipt.contract.url }}" target="_blank">Скачать</a>
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
                 <td>{{ receipt.created_at|date:"d.m.Y H:i" }}</td>
+                <td>{{ receipt.note|default:"—" }}</td>
                 <td>{{ receipt.created_by|default:"—" }}</td>
               </tr>
             {% empty %}
               <tr>
-                <td colspan="6" class="notice">Пока нет приёмок</td>
+                <td colspan="8" class="notice">Пока нет приёмок</td>
               </tr>
             {% endfor %}
           </tbody>
