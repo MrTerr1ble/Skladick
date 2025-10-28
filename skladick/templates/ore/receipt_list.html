@@ -20,6 +20,8 @@
             <th>Номенклатура</th>
             <th>Кол-во</th>
             <th>Документ</th>
+            <th>Доп. файл</th>
+            <th>Примечание</th>
             <th>Дата/время</th>
             <th>Оператор</th>
           </tr>
@@ -31,13 +33,27 @@
               <td>{{ r.location }}</td>
               <td>{{ r.item }}</td>
               <td>{{ r.quantity }}</td>
-              <td>{{ r.contract|default:"—" }}</td>
+              <td>
+                {% if r.contract %}
+                  <a href="{{ r.contract.url }}" target="_blank">Скачать</a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>
+                {% if r.file %}
+                  <a href="{{ r.file.url }}" target="_blank">Вложение</a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>{{ r.note|default:"—" }}</td>
               <td>{{ r.created_at|date:"d.m.Y H:i" }}</td>
               <td>{{ r.created_by|default:"—" }}</td>
             </tr>
           {% empty %}
             <tr>
-              <td colspan="7" class="notice">Записей пока нет</td>
+              <td colspan="9" class="notice">Записей пока нет</td>
             </tr>
           {% endfor %}
         </tbody>

@@ -75,7 +75,15 @@
     const loc = form.querySelector('[name="location"]')?.selectedOptions[0]?.textContent || '—';
     const item = form.querySelector('[name="item"]')?.selectedOptions[0]?.textContent || '—';
     const qty = form.querySelector('#f_quantity')?.value || '—';
-    const doc = form.querySelector('#f_contract')?.value || '—';
+    const contractInput = form.querySelector('#f_contract');
+    let doc = '—';
+    if (contractInput) {
+      if (contractInput.files && contractInput.files[0]) {
+        doc = contractInput.files[0].name;
+      } else if (contractInput.value) {
+        doc = contractInput.value;
+      }
+    }
     const note = form.querySelector('#f_note')?.value || '—';
     const file = form.querySelector('#f_file')?.files?.[0]?.name || '—';
     preview.innerHTML = `

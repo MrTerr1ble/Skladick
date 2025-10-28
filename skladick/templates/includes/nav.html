@@ -14,6 +14,10 @@
       class="{% if request.resolver_match.namespace == 'inventory' and request.resolver_match.url_name|default:''|slice:':9' == 'inventory' %}active{% endif %}"
     >РАЗМЕЩЕНИЕ НА СКЛАДЕ</a>
     <a
+      href="{% url 'stockpiles:dashboard' %}"
+      class="{% if request.resolver_match.namespace == 'stockpiles' %}active{% endif %}"
+    >СТОКПАЙЛЫ</a>
+    <a
       href="{% url 'inventory:movement_list' %}"
       class="{% if request.resolver_match.namespace == 'inventory' and request.resolver_match.url_name|default:''|slice:':8' == 'movement' %}active{% endif %}"
     >ПЕРЕМЕЩЕНИЯ</a>

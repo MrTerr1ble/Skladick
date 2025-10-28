@@ -68,6 +68,10 @@
       </form>
     {% elif purchase_request.state == 'APPROVED' %}
       <div class="text-success">✅ Заявка утверждена</div>
+    {% elif purchase_request.state == 'ORDERED' %}
+      <div class="text-success">📦 Закупка оформлена, ожидаем поставку</div>
+    {% elif purchase_request.state == 'CLOSED' %}
+      <div class="muted">ℹ️ Заявка закрыта</div>
     {% elif purchase_request.state == 'REJECTED' %}
       <div class="text-danger">❌ Заявка отклонена</div>
     {% endif %}
