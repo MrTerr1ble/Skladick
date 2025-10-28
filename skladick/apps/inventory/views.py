@@ -1,10 +1,15 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView
-from django.utils.timezone import make_aware
 from datetime import datetime
-from .models import Inventory, Movement
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
+from django.urls import reverse_lazy
+from django.utils.timezone import make_aware
+from django.views.generic import CreateView, ListView
+
+from apps.catalog.models import Item
+
 from .forms import MovementForm
+from .models import Inventory, Movement
 
 
 class InventoryListView(LoginRequiredMixin, ListView):
@@ -14,13 +19,18 @@ class InventoryListView(LoginRequiredMixin, ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related("location__warehouse", "item", "uom")
+        qs = (
+            super()
+            .get_queryset()
+            .select_related("location__warehouse", "item", "uom")
+            .exclude(item__kind=Item.ORE)
+        )
         w = self.request.GET.get("warehouse")
         i = self.request.GET.get("item")
         kind = self.request.GET.get("kind")
         if w:
             qs = qs.filter(location__warehouse__id=w)
-        if kind:
+        if kind and kind != Item.ORE:
             qs = qs.filter(item__kind=kind)
         if i:
             qs = qs.filter(item__id=i)
@@ -32,11 +42,12 @@ class InventoryListView(LoginRequiredMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         ctx["warehouses"] = Warehouse.objects.all().order_by("name")
         kind = self.request.GET.get("kind")
-        items = Item.objects.all().order_by("name")
-        if kind:
+        items = Item.objects.exclude(kind=Item.ORE).order_by("name")
+        allowed_kinds = [pair for pair in Item.KINDS if pair[0] != Item.ORE]
+        if kind and kind != Item.ORE:
             items = items.filter(kind=kind)
         ctx["items"] = items[:500]
-        ctx["kinds"] = Item.KINDS
+        ctx["kinds"] = allowed_kinds
         query = self.request.GET.copy()
         if "page" in query:
             query.pop("page")
@@ -53,8 +64,17 @@ class MovementListView(LoginRequiredMixin, ListView):
     ordering = "-occurred_at"
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related(
-            "item", "uom", "from_location__warehouse", "to_location__warehouse", "actor"
+        qs = (
+            super()
+            .get_queryset()
+            .select_related(
+                "item",
+                "uom",
+                "from_location__warehouse",
+                "to_location__warehouse",
+                "actor",
+            )
+            .exclude(item__kind=Item.ORE)
         )
         t = self.request.GET.get("type")
         i = self.request.GET.get("item")
@@ -84,7 +104,7 @@ class MovementListView(LoginRequiredMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         ctx["types"] = Movement.TYPES
         ctx["warehouses"] = Warehouse.objects.all().order_by("name")
-        ctx["items"] = Item.objects.all().order_by("name")[:500]
+        ctx["items"] = Item.objects.exclude(kind=Item.ORE).order_by("name")[:500]
         query = self.request.GET.copy()
         if "page" in query:
             query.pop("page")

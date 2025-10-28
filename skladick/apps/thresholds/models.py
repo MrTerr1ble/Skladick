@@ -1,11 +1,18 @@
 from django.db import models
 
+from apps.catalog.models import Item
+
 
 class Threshold(models.Model):
     """Пороговые значения по позиции/локации (нижний/верхний)."""
     warehouse = models.ForeignKey("warehouses.Warehouse", on_delete=models.CASCADE, verbose_name="Склад")
     location = models.ForeignKey("warehouses.Location", null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Локация")
-    item = models.ForeignKey("catalog.Item", on_delete=models.CASCADE, verbose_name="Номенклатура")
+    item = models.ForeignKey(
+        "catalog.Item",
+        on_delete=models.CASCADE,
+        verbose_name="Номенклатура",
+        limit_choices_to={"kind__in": [Item.TOOL, Item.EQUIPMENT, Item.CONSUMABLE]},
+    )
     min_qty = models.DecimalField("Мин. кол-во", max_digits=18, decimal_places=3, null=True, blank=True)
     max_qty = models.DecimalField("Макс. кол-во", max_digits=18, decimal_places=3, null=True, blank=True)
     uom = models.ForeignKey("catalog.Uom", on_delete=models.PROTECT, verbose_name="ЕИ")
@@ -32,7 +39,12 @@ class Alert(models.Model):
 
     warehouse = models.ForeignKey("warehouses.Warehouse", on_delete=models.PROTECT, verbose_name="Склад")
     location = models.ForeignKey("warehouses.Location", null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Локация")
-    item = models.ForeignKey("catalog.Item", on_delete=models.PROTECT, verbose_name="Номенклатура")
+    item = models.ForeignKey(
+        "catalog.Item",
+        on_delete=models.PROTECT,
+        verbose_name="Номенклатура",
+        limit_choices_to={"kind__in": [Item.TOOL, Item.EQUIPMENT, Item.CONSUMABLE]},
+    )
     threshold = models.ForeignKey(Threshold, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Порог")
     current_qty = models.DecimalField("Текущее кол-во", max_digits=18, decimal_places=3)
     uom = models.ForeignKey("catalog.Uom", on_delete=models.PROTECT, verbose_name="ЕИ")

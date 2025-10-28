@@ -14,6 +14,7 @@ urlpatterns = [
     # --- твои приложения ---
     path("ore/", include(("apps.ore.urls", "ore"), namespace="ore")),
     path("inventory/", include(("apps.inventory.urls", "inventory"), namespace="inventory")),
+    path("stockpiles/", include(("apps.stockpiles.urls", "stockpiles"), namespace="stockpiles")),
     path("thresholds/", include(("apps.thresholds.urls", "thresholds"), namespace="thresholds")),
     path("procurement/", include(("apps.procurement.urls", "procurement"), namespace="procurement")),
 

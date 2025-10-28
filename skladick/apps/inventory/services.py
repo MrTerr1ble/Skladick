@@ -1,10 +1,15 @@
 from django.db import transaction
+from apps.catalog.models import Item
+
 from .models import Inventory, Movement
 
 
 @transaction.atomic
 def apply_movement(m: Movement):
     """Перекидывает количество между инвенторями (с блокировкой строк)."""
+    if m.item.kind == Item.ORE:
+        return []
+
     def lock_inv(location):
         inv, _ = Inventory.objects.select_for_update().get_or_create(
             location=location, item=m.item,

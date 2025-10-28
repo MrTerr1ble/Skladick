@@ -1,8 +1,13 @@
-from .models import Threshold, Alert
+from apps.catalog.models import Item
+
+from .models import Alert, Threshold
 
 
 def evaluate_thresholds(inv):
     """Проверяет инвентарь на выход за пороги и создаёт Alert."""
+    if inv.item.kind == Item.ORE:
+        return
+
     qs = Threshold.objects.filter(is_active=True, item=inv.item, warehouse=inv.location.warehouse)
 
     # приоритет у порога для конкретной локации

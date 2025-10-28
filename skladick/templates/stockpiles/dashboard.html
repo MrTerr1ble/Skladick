@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Стокпайлы{% endblock %}
+
+{% block topbar %}
+<div class="topbar">
+  <div class="tabs"><div class="tab active">СТОКПАЙЛЫ</div></div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="notice info">Раздел для учёта руды и куч.</div>
+
+  <div class="table-card">
+    <div class="table-header">Остатки</div>
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Склад</th>
+            <th>Стокпайл</th>
+            <th>Номенклатура</th>
+            <th>Кол-во</th>
+            <th>ЕИ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in inventories %}
+          <tr>
+            <td>{{ inv.stockpile.warehouse.name }}</td>
+            <td>{{ inv.stockpile.location.code }}</td>
+            <td>{{ inv.item.name }}</td>
+            <td>{{ inv.qty_on_ground }}</td>
+            <td>{{ inv.uom.code }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="notice">Нет данных</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header">Алерты</div>
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Стокпайл</th>
+            <th>Номенклатура</th>
+            <th>Текущее кол-во</th>
+            <th>ЕИ</th>
+            <th>Статус</th>
+            <th>Сообщение</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for alert in alerts %}
+          <tr>
+            <td>{{ alert.created_at|date:"d.m.Y H:i" }}</td>
+            <td>{{ alert.stockpile.warehouse.name }} / {{ alert.stockpile.location.code }}</td>
+            <td>{{ alert.item.name }}</td>
+            <td>{{ alert.current_qty }}</td>
+            <td>{{ alert.uom.code }}</td>
+            <td>{{ alert.get_state_display }}</td>
+            <td>{{ alert.message }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="notice">Алертов нет</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

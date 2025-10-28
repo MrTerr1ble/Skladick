@@ -1,13 +1,21 @@
-from django.db import models
 from decimal import Decimal
+
 from django.conf import settings
+from django.db import models
 from django.utils import timezone
+
+from apps.catalog.models import Item
 
 
 class Inventory(models.Model):
     """Остатки по товарам и локациям."""
     location = models.ForeignKey("warehouses.Location", on_delete=models.PROTECT, verbose_name="Локация")
-    item = models.ForeignKey("catalog.Item", on_delete=models.PROTECT, verbose_name="Номенклатура")
+    item = models.ForeignKey(
+        "catalog.Item",
+        on_delete=models.PROTECT,
+        verbose_name="Номенклатура",
+        limit_choices_to={"kind__in": [Item.TOOL, Item.EQUIPMENT, Item.CONSUMABLE]},
+    )
     qty_on_hand = models.DecimalField("Количество", max_digits=18, decimal_places=3, default=Decimal("0.000"))
     uom = models.ForeignKey("catalog.Uom", on_delete=models.PROTECT, verbose_name="Единица измерения")
 
@@ -32,7 +40,12 @@ class Movement(models.Model):
 
     type = models.CharField("Тип операции", max_length=16, choices=TYPES)
     occurred_at = models.DateTimeField(verbose_name="Дата и время", default=timezone.now, editable=True,)
-    item = models.ForeignKey("catalog.Item", on_delete=models.PROTECT, verbose_name="Номенклатура")
+    item = models.ForeignKey(
+        "catalog.Item",
+        on_delete=models.PROTECT,
+        verbose_name="Номенклатура",
+        limit_choices_to={"kind__in": [Item.TOOL, Item.EQUIPMENT, Item.CONSUMABLE]},
+    )
     from_location = models.ForeignKey(
         "warehouses.Location", null=True, blank=True,
         related_name="+", on_delete=models.PROTECT, verbose_name="Откуда"

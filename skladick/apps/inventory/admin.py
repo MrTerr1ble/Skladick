@@ -1,4 +1,7 @@
 from django.contrib import admin
+
+from apps.catalog.models import Item
+
 from .models import Inventory, Movement
 
 
@@ -10,6 +13,15 @@ class InventoryAdmin(admin.ModelAdmin):
     ordering = ("location__warehouse__name", "location__code")
     autocomplete_fields = ("location", "item", "uom")
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.exclude(item__kind=Item.ORE)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "item":
+            kwargs.setdefault("queryset", db_field.related_model.objects.exclude(kind=Item.ORE))
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 @admin.register(Movement)
 class MovementAdmin(admin.ModelAdmin):
@@ -19,3 +31,12 @@ class MovementAdmin(admin.ModelAdmin):
     date_hierarchy = "occurred_at"
     ordering = ("-occurred_at",)
     autocomplete_fields = ("item", "from_location", "to_location", "uom", "actor")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.exclude(item__kind=Item.ORE)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "item":
+            kwargs.setdefault("queryset", db_field.related_model.objects.exclude(kind=Item.ORE))
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)

@@ -1,5 +1,8 @@
-from django.db import models
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
+
+from apps.catalog.models import Item
 
 
 class OreReceipt(models.Model):
@@ -20,3 +23,12 @@ class OreReceipt(models.Model):
 
     def __str__(self):
         return f"Приёмка {self.item} ({self.quantity}) в {self.location}"
+
+    def clean(self):
+        super().clean()
+        if self.item_id and self.item.kind != Item.ORE:
+            raise ValidationError({"item": "Для приёмки выберите номенклатуру типа 'Руда'."})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
