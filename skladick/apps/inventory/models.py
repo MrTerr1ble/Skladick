@@ -5,7 +5,7 @@ from django.utils import timezone
 
 
 class Inventory(models.Model):
-    """Остатки по товарам и локациям."""
+    """Остатки по товарам и локациям (обычные склады)."""
     location = models.ForeignKey("warehouses.Location", on_delete=models.PROTECT, verbose_name="Локация")
     item = models.ForeignKey("catalog.Item", on_delete=models.PROTECT, verbose_name="Номенклатура")
     qty_on_hand = models.DecimalField("Количество", max_digits=18, decimal_places=3, default=Decimal("0.000"))
@@ -22,7 +22,7 @@ class Inventory(models.Model):
 
 
 class Movement(models.Model):
-    """Операции движения (приёмка, списание, перемещение)."""
+    """Операции движения (приёмка, списание, перемещение) для обычных складов."""
     RECEIPT, ISSUE, TRANSFER = "RECEIPT", "ISSUE", "TRANSFER"
     TYPES = [
         (RECEIPT, "Приёмка"),
