@@ -235,6 +235,91 @@ try:
 
     print("✅ База данных успешно заполнена тестовыми данными!")
 
+
+    def create_thresholds_and_alerts(self):
+        self.stdout.write("⚠️ Создаем граничные значения и алерты...")
+
+        try:
+            from thresholds.models import Threshold, Alert
+            from catalog.models import Item
+            from warehouses.models import Warehouse
+
+            # Критические материалы
+            critical_items = [
+                {'sku': 'TOOL_DRILL', 'min_qty': Decimal('10.000'), 'max_qty': Decimal('100.000')},
+                {'sku': 'CHEM_REAGENT', 'min_qty': Decimal('50.000'), 'max_qty': Decimal('500.000')},
+                {'sku': 'SPARE_ENGINE', 'min_qty': Decimal('2.000'), 'max_qty': Decimal('10.000')},
+            ]
+
+            # Пороги для руды
+            ore_items = [
+                {'sku': 'ORE_COPPER', 'min_qty': Decimal('1000.000'), 'max_qty': Decimal('8000.000')},
+                {'sku': 'ORE_NICKEL', 'min_qty': Decimal('800.000'), 'max_qty': Decimal('6000.000')},
+                {'sku': 'ORE_IRON', 'min_qty': Decimal('2000.000'), 'max_qty': Decimal('12000.000')},
+                {'sku': 'ORE_GOLD', 'min_qty': Decimal('500.000'), 'max_qty': Decimal('3000.000')},
+            ]
+
+            # Создаем пороги для всех складов
+            for warehouse in Warehouse.objects.all():
+                # Критические материалы на всех складах
+                for item_data in critical_items:
+                    try:
+                        item = Item.objects.get(sku=item_data['sku'])
+                        threshold, created = Threshold.objects.get_or_create(
+                            warehouse=warehouse,
+                            item=item,
+                            defaults={
+                                'min_qty': item_data['min_qty'],
+                                'max_qty': item_data['max_qty'],
+                                'uom': item.base_uom
+                            }
+                        )
+                        if created:
+                            self.stdout.write(f'  ✅ Порог: {item.name} на {warehouse.name}')
+                    except Item.DoesNotExist:
+                        pass
+
+                # Руда только на северных складах
+                if 'NORTH' in warehouse.code:
+                    for ore_data in ore_items:
+                        try:
+                            item = Item.objects.get(sku=ore_data['sku'])
+                            threshold, created = Threshold.objects.get_or_create(
+                                warehouse=warehouse,
+                                item=item,
+                                defaults={
+                                    'min_qty': ore_data['min_qty'],
+                                    'max_qty': ore_data['max_qty'],
+                                    'uom': item.base_uom
+                                }
+                            )
+                            if created:
+                                self.stdout.write(f'  ✅ Порог руды: {item.name} на {warehouse.name}')
+                        except Item.DoesNotExist:
+                            pass
+
+            # Тестовые алерты
+            try:
+                drill_item = Item.objects.get(sku='TOOL_DRILL')
+                warehouse = Warehouse.objects.first()
+
+                Alert.objects.get_or_create(
+                    warehouse=warehouse,
+                    item=drill_item,
+                    current_qty=Decimal('5.000'),
+                    uom=drill_item.base_uom,
+                    severity=Alert.CRIT,
+                    message="Критически низкий запас бурового инструмента",
+                    correlation_id="DEMO_ALERT_001"
+                )
+                self.stdout.write('  ✅ Демо-алерт создан')
+
+            except Item.DoesNotExist:
+                pass
+
+        except ImportError as e:
+            self.stdout.write(f'  ❌ Ошибка импорта thresholds: {e}')
+
 except Exception as e:
     print(f"❌ Ошибка: {e}")
     import traceback
