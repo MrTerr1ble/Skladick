@@ -1,18 +1,22 @@
 // Показывает всплывающее уведомление
+let alertElements = []; // храним ссылки на все активные алерты
+
 function showAlertPopup(a) {
   const div = document.createElement("div");
   div.className = "alert-popup";
   div.style.position = "fixed";
-  div.style.bottom = "20px";
   div.style.right = "20px";
   div.style.background = "#fff4f4";
   div.style.border = "1px solid #d64545";
   div.style.borderLeft = "5px solid #d64545";
   div.style.padding = "12px 18px";
-  div.style.marginTop = "10px";
   div.style.borderRadius = "8px";
   div.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
   div.style.zIndex = 10000;
+  div.style.maxWidth = "350px";
+  div.style.width = "100%";
+  div.style.transition = "bottom 0.3s ease"; // плавная анимация
+
   const location = a.location && a.location !== "—" ? a.location : "—";
   const message = a.message ? `${a.message}<br>` : "";
   const severityColor = {
@@ -20,6 +24,7 @@ function showAlertPopup(a) {
     WARN: "#f0ad4e",
     CRIT: "#d64545",
   }[a.severity_code] || "#d64545";
+
   div.innerHTML = `
     <strong>⚠ ${a.item}</strong><br>
     ${message}
@@ -27,8 +32,33 @@ function showAlertPopup(a) {
     <span style="color:${severityColor};font-weight:600;">${a.severity}</span><br>
     <button class="btn" style="margin-top:6px;" onclick="window.location.href='/thresholds/alerts/'">Перейти в Контроль</button>
   `;
+
+  // Добавляем алерт в массив и обновляем позиции
+  alertElements.push(div);
   document.body.appendChild(div);
-  setTimeout(() => div.remove(), 10000);
+
+  // Обновляем позиции всех алертов
+  updateAlertPositions();
+
+  setTimeout(() => {
+    // Удаляем алерт из массива и из DOM
+    const index = alertElements.indexOf(div);
+    if (index > -1) {
+      alertElements.splice(index, 1);
+    }
+    div.remove();
+
+    // Обновляем позиции оставшихся алертов
+    updateAlertPositions();
+  }, 10000);
+}
+
+// Обновляет позиции всех видимых алертов
+function updateAlertPositions() {
+  const alertHeight = 160; // высота алерта + отступ
+  alertElements.forEach((alert, index) => {
+    alert.style.bottom = `${20 + index * alertHeight}px`;
+  });
 }
 
 // Периодически проверяет новые алерты
