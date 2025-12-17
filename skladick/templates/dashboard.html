@@ -2,6 +2,7 @@
 {% block title %}Дашборд — Склад{% endblock %}
 
 {% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   .dashboard-grid {
     display: grid;
@@ -9,26 +10,102 @@
   }
   .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 18px;
+  }
+  .metric-card {
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #94b8e8;
+    border-radius: 4px 0 0 4px;
+  }
+  .metric-card.alert::before { background: #e8a0a0; }
+  .metric-card.success::before { background: #7dd3a8; }
+  .metric-card.info::before { background: #b4b5f0; }
+  
+  .metric-card .card-body {
+    padding-left: 8px;
   }
   .metric-card .metric-title {
     color: var(--muted);
-    font-size: 14px;
+    font-size: 13px;
     letter-spacing: .04em;
     text-transform: uppercase;
+    margin-bottom: 4px;
   }
   .metric-card .metric-value {
     font-size: 32px;
     font-weight: 700;
-    color: var(--brand);
+    color: #4a5568;
+    line-height: 1.1;
   }
+  .metric-card.alert .metric-value { color: #d08080; }
+  .metric-card.success .metric-value { color: #5cb888; }
+  .metric-card.info .metric-value { color: #8b8cd8; }
+  
   .metric-card .metric-subtext {
     color: var(--muted);
-    font-size: 14px;
+    font-size: 13px;
+    margin-top: 2px;
   }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 1100px) {
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+
+  .chart-card {
+    background: var(--panel);
+    border: 1px solid var(--stroke);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+  }
+  .chart-card h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-card h3 .icon {
+    width: 20px;
+    height: 20px;
+    color: #94b8e8;
+  }
+  .chart-container {
+    position: relative;
+    height: 260px;
+  }
+  .chart-container.small {
+    height: 220px;
+  }
+
   .table-card table td:first-child {
     text-align: left;
+  }
+
+  .bottom-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) {
+    .bottom-section { grid-template-columns: 1fr; }
   }
 </style>
 {% endblock %}
@@ -42,33 +119,104 @@
 {% block content %}
 <div class="container">
   <div class="dashboard-grid">
+    <!-- Метрики -->
     <div class="metrics-grid">
       <div class="card metric-card">
         <div class="card-body">
           <span class="metric-title">Остатков всего</span>
-          <span class="metric-value">{{ inventory_total|floatformat:3 }}</span>
+          <span class="metric-value">{{ inventory_total|floatformat:0 }}</span>
           <span class="metric-subtext">по всем локациям</span>
         </div>
       </div>
-      <div class="card metric-card">
+      <div class="card metric-card alert">
         <div class="card-body">
           <span class="metric-title">Открытых алертов</span>
           <span class="metric-value">{{ open_alerts_count }}</span>
           <span class="metric-subtext">требуют внимания</span>
         </div>
       </div>
-      <div class="card metric-card">
+      <div class="card metric-card info">
         <div class="card-body">
           <span class="metric-title">Активных заявок</span>
           <span class="metric-value">{{ active_purchase_requests_count }}</span>
-          <span class="metric-subtext">на этапе согласования</span>
+          <span class="metric-subtext">на согласовании</span>
+        </div>
+      </div>
+      <div class="card metric-card success">
+        <div class="card-body">
+          <span class="metric-title">Операций за месяц</span>
+          <span class="metric-value">{{ total_movements_month }}</span>
+          <span class="metric-subtext">перемещений</span>
         </div>
       </div>
     </div>
 
+    <!-- Графики -->
+    <div class="charts-grid">
+      <!-- График приёмок -->
+      <div class="chart-card">
+        <h3>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          Динамика приёмок (14 дней)
+        </h3>
+        <div class="chart-container">
+          <canvas id="receiptsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Остатки по складам -->
+      <div class="chart-card">
+        <h3>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          Остатки по складам
+        </h3>
+        <div class="chart-container small">
+          <canvas id="warehouseChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Типы операций -->
+      <div class="chart-card">
+        <h3>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          Операции за месяц
+        </h3>
+        <div class="chart-container small">
+          <canvas id="movementsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Статусы заявок -->
+      <div class="chart-card">
+        <h3>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          Заявки на закупку
+        </h3>
+        <div class="chart-container small">
+          <canvas id="requestsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Нижняя секция: таблица приёмок -->
     <div class="table-card">
       <div class="table-toolbar">
-        <h3 style="margin:0;font-size:18px;">Последние приёмки</h3>
+        <h3 style="margin:0;font-size:16px;font-weight:600;">Последние приёмки</h3>
       </div>
       <div class="table-wrapper">
         <table class="table">
@@ -103,4 +251,223 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Пастельная цветовая палитра
+  const colors = {
+    brand: '#7c9ed9',
+    brandLight: 'rgba(124, 158, 217, 0.15)',
+    success: '#7dd3a8',
+    danger: '#e8a0a0',
+    warning: '#f5c896',
+    purple: '#b4b5f0',
+    teal: '#8ad4d0',
+    pink: '#f0b4d4',
+    gray: '#b8c0cc',
+    peach: '#f5c4b8',
+    lavender: '#c9b8e8',
+    mint: '#a8e0c8'
+  };
+
+  const chartColors = [
+    colors.brand,
+    colors.mint,
+    colors.lavender,
+    colors.peach,
+    colors.teal,
+    colors.pink,
+    colors.warning
+  ];
+
+  // Общие настройки
+  Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, system-ui';
+  Chart.defaults.color = '#5e6b85';
+
+  // 1. График приёмок
+  const receiptsData = {{ receipts_chart|safe }};
+  new Chart(document.getElementById('receiptsChart'), {
+    type: 'line',
+    data: {
+      labels: receiptsData.labels,
+      datasets: [{
+        label: 'Количество приёмок',
+        data: receiptsData.counts,
+        borderColor: '#94b8e8',
+        backgroundColor: 'rgba(148, 184, 232, 0.2)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: '#94b8e8',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointHoverRadius: 7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(60, 70, 85, 0.95)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          padding: 12,
+          cornerRadius: 10,
+          displayColors: false
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 11 }, color: '#9ca3af' }
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: '#f0f4f8' },
+          ticks: { 
+            font: { size: 11 },
+            color: '#9ca3af',
+            stepSize: 1
+          }
+        }
+      }
+    }
+  });
+
+  // 2. Остатки по складам (Doughnut)
+  const warehouseData = {{ warehouse_chart|safe }};
+  new Chart(document.getElementById('warehouseChart'), {
+    type: 'doughnut',
+    data: {
+      labels: warehouseData.labels,
+      datasets: [{
+        data: warehouseData.data,
+        backgroundColor: chartColors,
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            padding: 16,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            font: { size: 12 },
+            color: '#6b7280'
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(60, 70, 85, 0.95)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          padding: 12,
+          cornerRadius: 10
+        }
+      }
+    }
+  });
+
+  // 3. Операции по типам (Bar)
+  const movementsData = {{ movements_chart|safe }};
+  new Chart(document.getElementById('movementsChart'), {
+    type: 'bar',
+    data: {
+      labels: movementsData.labels,
+      datasets: [{
+        label: 'Количество',
+        data: movementsData.data,
+        backgroundColor: [colors.mint, colors.peach, colors.lavender],
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 40
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(60, 70, 85, 0.95)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          padding: 12,
+          cornerRadius: 10,
+          displayColors: false
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 12 }, color: '#9ca3af' }
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: '#f0f4f8' },
+          ticks: { 
+            font: { size: 11 },
+            color: '#9ca3af',
+            stepSize: 1
+          }
+        }
+      }
+    }
+  });
+
+  // 4. Статусы заявок (Doughnut)
+  const requestsData = {{ requests_chart|safe }};
+  const statusColors = {
+    'Черновик': colors.gray,
+    'На рассмотрении': colors.warning,
+    'Утверждена': colors.mint,
+    'Отклонена': colors.peach
+  };
+  new Chart(document.getElementById('requestsChart'), {
+    type: 'doughnut',
+    data: {
+      labels: requestsData.labels,
+      datasets: [{
+        data: requestsData.data,
+        backgroundColor: requestsData.labels.map(l => statusColors[l] || colors.gray),
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            padding: 16,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            font: { size: 12 },
+            color: '#6b7280'
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(60, 70, 85, 0.95)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          padding: 12,
+          cornerRadius: 10
+        }
+      }
+    }
+  });
+</script>
 {% endblock %}

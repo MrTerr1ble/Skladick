@@ -8,8 +8,8 @@
     <div class="tab active">ЗАЯВКА № {{ purchase_request.number }}</div>
   </div>
   <div class="profile">
-    <a class="btn ghost" href="{% url 'procurement:purchase_request_list' %}">Назад</a>
     <a class="btn" href="{% url 'procurement:purchase_request_update' purchase_request.pk %}">Редактировать</a>
+    <a class="btn ghost" href="{% url 'procurement:purchase_request_list' %}">Назад</a>
   </div>
 </div>
 {% endblock %}

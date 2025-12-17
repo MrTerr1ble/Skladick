@@ -127,21 +127,22 @@ body{
   gap:24px;
   align-items:flex-start;
 }
-.table-card { background:#fff; border:1px solid var(--stroke); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; } /* overflow to clip radius */
-.table-toolbar{ padding:14px; border-bottom:1px solid var(--stroke); display:flex; gap:10px; align-items:center; } /* align fix */
-.table-wrapper{ overflow:auto; }
+.table-card { background:#fff; border:1px solid var(--stroke); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+.table-toolbar{ padding:14px; border-bottom:1px solid var(--stroke); display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.table-wrapper{ overflow-x:auto; overflow-y:visible; }
 .pagination{ padding:14px; display:flex; gap:10px; align-items:center; justify-content:flex-end; }
 .table{
   width:100%;
-  border-collapse:separate;
+  min-width: max-content;
+  border-collapse:collapse;
   border-spacing:0;
-  table-layout: fixed;             /* NEW: стабильные колонки */
 }
 .table th, .table td{
   padding:12px 14px;
   border-bottom:1px solid #e8eefb;
   vertical-align:middle;
   text-align:center;
+  white-space: nowrap;
 }
 .table th{
   text-transform:uppercase;
@@ -149,6 +150,15 @@ body{
   letter-spacing:.05em;
   color:#5e6b85;
   background:#f7f9ff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.table tbody tr{
+  height: auto;
+}
+.table tbody tr:hover{
+  background:#f8faff;
 }
 /* Status dropdown */
 .status{
@@ -169,15 +179,7 @@ body{
 .menu .ok{ color:var(--success) }
 .menu .bad{ color:var(--danger) }
 
-.table thead th:nth-child(1){ width:120px; }  /* Номер */
-.table thead th:nth-child(2){ width:260px; }  /* Номенклатура/Поставщик */
-.table thead th:nth-child(3){ width:140px; }  /* Кол-во */
-.table thead th:nth-child(4){ width:140px; }  /* Статус */
-.table thead th:nth-child(5){ width:180px; }  /* Склад */
-.table thead th:nth-child(6){ width:160px; }  /* Автор */
-.table thead th:nth-child(7){ width:140px; }  /* Кнопка */
-
-.text-end { text-align:right; } /* на всякий случай */
+.text-end { text-align:right; }
 
 /* ---------- Кнопки/ссылки ---------- */
 .btn{ display:inline-flex; align-items:center; justify-content:center; line-height:1; }  /* чтобы не прыгали по высоте */

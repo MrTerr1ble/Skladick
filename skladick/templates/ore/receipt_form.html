@@ -15,8 +15,8 @@
     <form method="post" enctype="multipart/form-data" class="card" id="receiptForm">
       {% csrf_token %}
       <div class="toolbar">
-        <button class="btn primary" type="submit">СОХРАНИТЬ</button>
-        <button class="btn ghost" type="button" onclick="history.back()">ОТМЕНИТЬ</button>
+        <button class="btn primary" type="submit">Сохранить</button>
+        <a class="btn ghost" href="{% url 'ore:receipt_list' %}">Отмена</a>
       </div>
 
       <div class="field">
